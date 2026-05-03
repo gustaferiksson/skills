@@ -86,12 +86,6 @@ After all agents complete, produce the synthesis:
 4. **Revised Plan** — Concrete changes mapped to specific failure modes. Not "consider your pricing" — "test pricing at $X with 20 people before committing publicly."
 5. **Pre-Launch Checklist** — 3–5 specific things to verify, test, or put in place before executing. Each one prevents or detects one failure mode.
 
-## Step 6: Output
-
-Reply in chat with a concise three-sentence summary: most likely failure, hidden assumption, single most important revision.
-
-Then save the full transcript to `premortem-transcript-[timestamp].md` in the user's workspace, including the gathered context, the raw failure reasons, all agent deep-dives, and the full synthesis.
-
 ## Principles
 
 - **Always parallel.** Sequential agent spawning wastes time and lets earlier responses contaminate later ones.
