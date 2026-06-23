@@ -18,6 +18,21 @@ These rules override the urge to fill every section.
 5. **"Better approach" is rare.** Use only when you see a meaningfully different shape given the bigger picture (think `/zoom-out`). Naming, file placement, or "consider X" are not a better approach.
 6. **File placement / naming** is only a finding when it's actively wrong (broken import resolution, violates the repo's established convention enough to confuse maintainers). Surface it under `Bugs and issues` as `[high]`. Don't create a separate style-issues section.
 
+## Review dimensions
+
+Beyond logic bugs, scan these — but they obey the same bar (Rules 1–2): surface one only when it **materially** hurts correctness, maintainability, or a contract that's expensive to change once consumed. Lint owns the trivial; don't repeat it here. **Over-engineering is as much a finding as under-engineering.**
+
+- **Maintainability / readability** — mega-functions, deep nesting, control flow you can't follow in one pass, names that mislead. Flag the genuinely hard-to-follow, not style.
+- **Separation of concerns (both directions)** — one unit doing several jobs (fetch + compute + render + persist), or pure logic fused with I/O (tell: params or seams that exist only to inject mocks in tests). *And the opposite* — over-abstraction: factory-of-factory, single-use one-line helpers, indirection you can't follow in one pass. Flag ravioli as readily as spaghetti; don't push extraction past the point it aids understanding.
+- **Callback hell** — deeply nested or chained callbacks and closures, **sync or async** (nested `.map`/`.forEach`/`.reduce`, callbacks passed as config, functions that return functions, anonymous closures several levels deep), and closures that capture and mutate shared state. This is about nesting and indirection generally, not just async — prefer named top-level functions and straight control flow. (Fire-and-forget async — `setTimeout(async …)`, an `async` fn passed where `void` is expected — is the separate, lint-catchable cousin.)
+- **Coding conventions** — `let` where `const` fits, deep method nesting, comments that narrate *what* instead of *why*. Mostly lint's job — raise here only when lint won't catch it or it's egregious.
+- **File structure** — deviates from the repo's established layout enough to confuse (e.g. types in the new feature folder but the repo dumped in a legacy dir; a second stack stood up beside an existing one). Per Rule 6, `[high]` under Bugs and issues.
+- **Database design** — single-table modelling: item collections vs one nested blob, the item-size limit, key / access-pattern grammar, access enforced inside the repo (not by a comment the caller must remember), migration + rollback. Data shape is expensive to change, so it's material almost by default.
+- **REST endpoint structure** — collection (`/things`, plural) + item (`/things/{id}`) + actions as named sub-resources, not an overloaded collection `POST`; correct status codes; no accidental singular singletons. The URL is a contract — flag deviations before consumers bind to them.
+- **YAGNI** — speculative generality: single-member "extensible" unions, abstractions or parameters built for a future that isn't here or only to satisfy a test. Debt, not a nit — flag it.
+
+Conventions: if the repo has a `CONVENTIONS.md` / `CLAUDE.md`, check against it. If it doesn't, **discover the de-facto conventions first** — read the nearest one or two analogous files (a sibling endpoint, the existing repository, a neighbouring module) and infer the established patterns, then judge the PR against those. "There's no written rule" is not a pass; consistency with the surrounding code is the rule. Either way, surface only material deviations, not every divergence.
+
 ## Premortem framing
 
 For "What might bite you", assume this PR shipped six months ago and something tied to it broke. Work backward: what specific failure modes does THIS design invite? Be concrete — name the table, the field, the boundary, the assumption. Generic risk ("could be slow", "might not scale") doesn't qualify.
