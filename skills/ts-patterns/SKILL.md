@@ -1,11 +1,11 @@
 ---
 name: ts-patterns
-description: Personal TypeScript defaults applied to any TS Claude writes for the user. Forbids `any`, unsafe `as` casts, `enum`, and boolean-flag parameters. Prefers `type` over `interface` (except React function component props), functions over classes, early exits over nested conditionals, `if` over `switch`, and named design patterns where they fit. Stays library-agnostic. Use when writing or editing TypeScript (`.ts`/`.tsx` files) or producing TS code, including React components. Defer to per-repo CLAUDE.md or established conventions when they conflict.
+description: Personal TypeScript architectural defaults applied to any TS Claude writes for the user. Forbids `any`, unsafe `as` casts, `enum`, and boolean-flag parameters. Prefers `type` over `interface` (except React function component props), functions over classes, discriminated unions with a `: never` exhaustiveness guard, and named design patterns where they fit. Stays library-agnostic. Use when writing or editing TypeScript (`.ts`/`.tsx` files) or producing TS code, including React components. General structure/flow/readability rules (const, early exits, no duplication) live in the global coding principles, not here. Defer to per-repo CLAUDE.md or established conventions when they conflict.
 ---
 
 # TypeScript Patterns
 
-Personal defaults for any TS code written for the user.
+Personal *TS-architectural* defaults — type safety, type modelling, and interface shape. The general structure/flow/readability bar (`const` over `let`, early exits, straight control flow, small-abstraction-over-duplication) lives in the global coding principles and applies to all code; this skill covers only what is TypeScript-specific.
 
 **Defer to the repo first.** If this repo has a CLAUDE.md, a style guide, lint rules, or visibly established conventions that conflict with these rules, follow the repo. These are personal defaults, not overrides.
 
@@ -66,40 +66,24 @@ Default to functions and closures. Reach for a class when:
 
 Don't write "service" classes that hold no state — that's a namespace, write functions instead.
 
-### 6. Early exits. Guard clauses. No conditional pyramids.
+### 6. Model unions exhaustively with a `: never` guard.
+
+When branching over every member of a discriminated or string-literal union, end the `if`/`else if` chain by assigning the unhandled value to a `: never` binding, so adding a variant later is a compile error:
 
 ```ts
-// No
-function process(user: User | null) {
-  if (user) {
-    if (user.isActive) {
-      if (user.balance > 0) {
-        // ...
-      }
-    }
-  }
-}
-
-// Yes
-function process(user: User | null) {
-  if (!user) return;
-  if (!user.isActive) return;
-  if (user.balance <= 0) return;
-  // ...
+function area(shape: Shape): number {
+  if (shape.kind === 'circle') return Math.PI * shape.r ** 2;
+  if (shape.kind === 'square') return shape.side ** 2;
+  const _exhaustive: never = shape;
+  throw new Error(`unhandled: ${JSON.stringify(_exhaustive)}`);
 }
 ```
 
-### 7. `if` over `switch`.
+This gets exhaustiveness without a `switch`. (General preference for `if` over `switch` is in the global coding principles.)
 
-Default to `if` / early-return chains. `switch` earns its place rarely — only for a long flat enumeration where reading top-to-bottom genuinely helps. If you're reaching for `switch` to get exhaustiveness checking, an `if`/`else if` chain ending in `: never` does the same job.
-
-### 8. Reach for named design patterns when they fit.
+### 7. Reach for named design patterns when they fit.
 
 When the shape of a problem matches a known pattern (Builder, Strategy, Adapter, Factory, Observer, etc.), name it and use the part that helps. Don't ceremony the whole pattern when only one piece is needed — borrow the Builder's fluent chain without inventing a `Director` class.
-
-### 9. `const` everywhere. `let` only when something genuinely mutates.
-
-Default to `const`. Reach for `let` only when the binding actually changes after declaration (accumulator in a loop, swap, lazy assignment after a branch). If you find yourself reaching for `let` to "set it up first", that's usually a sign the value should be computed in one expression — extract a helper or use a ternary.
 
 ## Library agnostic
 
@@ -112,5 +96,4 @@ These weren't asked but had to be decided:
 - **Named exports** over default exports
 - **`const` arrow functions** for module-level definitions; `function` declarations only when hoisting matters
 - **`async`/`await`** over `.then()` chains
-- **Zero comments by default.** Make names self-documenting. Add one only if omitting it would genuinely mislead the reader, then a single terse line, never block/JSDoc comments. A comment-heavy neighbouring file does not justify adding one.
 - **Strict tsconfig assumed** (`strict: true`, `noUncheckedIndexedAccess: true`)

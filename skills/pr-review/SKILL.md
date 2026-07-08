@@ -1,6 +1,6 @@
 ---
 name: pr-review
-description: Reviews a pull request, surfacing true bugs and design failure modes. Investigates code changes, permissions, infra, and naming/structure conventions, then outputs a tight review focused on (1) bugs and issues, (2) premortem-style failure modes the design invites, and (3) at most one zoom-out alternative. Use when the user asks to review a PR, mentions a PR number or URL, or says "review this PR", "check this PR", or "pr-review".
+description: Reviews a pull request, surfacing true bugs, code-quality failures, and design failure modes. Investigates code changes, permissions, infra, and naming/structure conventions, then outputs a tight review — (1) bugs and issues, (2) code quality held to a lazy-senior-dev bar on structure, flow, and readability, (3) premortem-style failure modes the design invites, and (4) at most one zoom-out alternative. Use when the user asks to review a PR, mentions a PR number or URL, or says "review this PR", "check this PR", or "pr-review".
 ---
 
 # PR Review
@@ -11,27 +11,38 @@ Investigate the PR, the code around it, and any other repos referenced by or aff
 
 These rules override the urge to fill every section.
 
-
 1. **No `Good` section.** Praise pads tokens and doesn't change code.
-2. **Skip empty sections entirely.** If "Bugs and issues" is empty, write `None spotted.` and end the review. If "What might bite you" is empty, omit the heading.
+2. **Skip empty sections entirely.** If a section has nothing, write `None spotted.` and move on, or omit the heading — never manufacture findings to fill it.
 3. **"Better approach" is rare.** Use only when you see a meaningfully different shape given the bigger picture (think `/zoom-out`).
-4. **File placement / naming** is only a finding when it's actively wrong (broken import resolution, violates the repo's established convention enough to confuse maintainers). Surface it under `Bugs and issues` as `[high]`. Don't create a separate style-issues section.
+4. **File placement / naming counts only when it's actively wrong** — broken import resolution, or a deviation from the repo's established layout big enough to confuse maintainers (types in the feature folder while the repo dumps them in a legacy dir; a second stack stood up beside an existing one). Surface it under `Bugs and issues` as `[high]`.
 
-## Review dimensions
+## Code quality — review like a lazy senior dev
 
-**Over-engineering is as much a finding as under-engineering.**
+Agent-written code is routinely poor in structure, flow, and readability even when it's correct. Hold it to the bar in the user's global coding principles: **would a senior wave this through on first read?** If not, it's a finding — structure, flow, and readability are first-class here, not "just style".
 
-- **Maintainability / readability** — mega-functions, deep nesting, control flow you can't follow in one pass, names that mislead. Flag the genuinely hard-to-follow, not style.
-- **Separation of concerns (both directions)** — one unit doing several jobs (fetch + compute + render + persist), or pure logic fused with I/O (tell: params or seams that exist only to inject mocks in tests). *And the opposite* — over-abstraction: factory-of-factory, single-use one-line helpers, indirection you can't follow in one pass. Flag ravioli as readily as spaghetti; don't push extraction past the point it aids understanding.
-- **Callback hell** — deeply nested or chained callbacks and closures, **sync or async** (callbacks passed as config, functions that return functions, anonymous closures several levels deep), and closures that capture and mutate shared state. This is about nesting and indirection generally, not just async — prefer named top-level functions and straight control flow. (Fire-and-forget async — `setTimeout(async …)`, an `async` fn passed where `void` is expected — is the separate, lint-catchable cousin.)
-- **Coding conventions** — `let` where `const` fits, deep method nesting, comments that narrate *what* instead of *why*.
-- **File structure** — deviates from the repo's established layout enough to confuse (e.g. types in the new feature folder but the repo dumped in a legacy dir; a second stack stood up beside an existing one). Per Rule 4, `[high]` under Bugs and issues.
+*Lazy* senior, though — the bar cuts both ways. Flag real friction, not trivia: skip formatting, lint-autofixable nits, and taste calls the repo already made. And **over-engineering is as much a finding as under-engineering** — indirection the code doesn't yet need is debt, not quality.
+
+Flag:
+
+- **Reassignment / mutation** — `let` where `const` fits; a value set up across several statements instead of computed in one; closures that capture and mutate shared state.
+- **Control flow you can't follow in one pass** — conditional pyramids, deep nesting, `switch` where an early-return chain reads straighter, callback chains and nested closures (sync or async). Prefer named top-level functions and straight flow.
+- **Duplication vs the right abstraction** — real logic copied a second time wants one small helper; but a sprawl of tiny single-use helpers and utils, a one-line wrapper, a factory-of-factory, or a seam that exists only to inject a test mock is over-abstraction — the single most common failing in agent code, so flag it hard. Flag ravioli as readily as spaghetti.
+- **Separation of concerns (both directions)** — one unit doing fetch + compute + render + persist, or pure logic fused with I/O; *and* the opposite, extraction pushed past the point it aids understanding.
+- **Names that mislead** — a name that describes the wrong thing, or needs a comment to be understood.
+- **Comments that narrate *what* instead of *why*.**
+- **YAGNI** — speculative generality: single-member "extensible" unions, parameters built for a future that isn't here or only to satisfy a test.
+
+Severity: quality issues that shelter a bug (a mega-function hiding one, mutation causing a race) rank with bugs; the rest go in the `Code quality` output section, most-impactful first.
+
+**Seams with other skills.** This bar is the always-on baseline. When a finding needs a *named* fix, reach for `/refactor` (Fowler smell + technique catalog); when the friction is module depth / testability at the architecture level, that's `/improve-codebase-architecture`. Point at those catalogs — don't restate them.
+
+**Conventions.** If the repo has a `CONVENTIONS.md` / `CLAUDE.md`, check against it. If it doesn't, **discover the de-facto conventions first** — read the nearest one or two analogous files (a sibling endpoint, the existing repository, a neighbouring module) and infer the established patterns, then judge the PR against those. "There's no written rule" is not a pass; consistency with the surrounding code is the rule. Either way, surface only material deviations.
+
+## Other review dimensions
+
 - **Database design** — single-table modelling: item collections vs one nested blob, the item-size limit, key / access-pattern grammar, access enforced inside the repo (not by a comment the caller must remember), migration + rollback. Data shape is expensive to change, so it's material almost by default.
 - **REST endpoint structure** — collection (`/things`, plural) + item (`/things/{id}`) + actions as named sub-resources, not an overloaded collection `POST`; correct status codes; no accidental singular singletons. The URL is a contract — flag deviations before consumers bind to them.
-- **YAGNI** — speculative generality: single-member "extensible" unions, abstractions or parameters built for a future that isn't here or only to satisfy a test. Debt, not a nit — flag it.
-- **Framework best practices** - If the code uses some kind of framework or sdk, look up the docs and check for best practices. If anything deviates or doesn't follow it, flag it.
-
-Conventions: if the repo has a `CONVENTIONS.md` / `CLAUDE.md`, check against it. If it doesn't, **discover the de-facto conventions first** — read the nearest one or two analogous files (a sibling endpoint, the existing repository, a neighbouring module) and infer the established patterns, then judge the PR against those. "There's no written rule" is not a pass; consistency with the surrounding code is the rule. Either way, surface only material deviations, not every divergence.
+- **Framework best practices** — if the code uses a framework or SDK, look up the docs and check for best practices. Flag anything that deviates.
 
 ## Premortem framing
 
@@ -49,7 +60,11 @@ PR #XXX — <name of the PR>
 What it does: <one sentence>
 
 Bugs and issues
-1. [critical/high] <issue, ordered most-important-first>
+1. [critical/high] <correctness issue, most-important-first>
+2. ...
+
+Code quality
+1. [high/medium/low] <structure / flow / readability finding, most-impactful-first>
 2. ...
 
 What might bite you (premortem)
