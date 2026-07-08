@@ -112,5 +112,5 @@ These weren't asked but had to be decided:
 - **Named exports** over default exports
 - **`const` arrow functions** for module-level definitions; `function` declarations only when hoisting matters
 - **`async`/`await`** over `.then()` chains
-- **No comments** unless the WHY is non-obvious (the *why*, not the *what*)
+- **Zero comments by default.** Make names self-documenting. Add one only if omitting it would genuinely mislead the reader, then a single terse line, never block/JSDoc comments. A comment-heavy neighbouring file does not justify adding one.
 - **Strict tsconfig assumed** (`strict: true`, `noUncheckedIndexedAccess: true`)
