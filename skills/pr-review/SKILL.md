@@ -44,7 +44,7 @@ Severity: quality issues that shelter a bug (a mega-function hiding one, mutatio
 
 - **Database design** — single-table modelling: item collections vs one nested blob, the item-size limit, key / access-pattern grammar, access enforced inside the repo (not by a comment the caller must remember), migration + rollback. Data shape is expensive to change, so it's material almost by default.
 - **REST endpoint structure** — collection (`/things`, plural) + item (`/things/{id}`) + actions as named sub-resources, not an overloaded collection `POST`; correct status codes; no accidental singular singletons. The URL is a contract — flag deviations before consumers bind to them.
-- **Framework best practices** — if the code uses a framework or SDK, look up the docs and check for best practices. Flag anything that deviates.
+- **Framework & library idioms** — when the code uses a framework, SDK, or data library, check its docs for best practices *and* find an existing module in this repo that uses the same library; hold the PR to that established usage, not just to generic style. A house idiom the PR breaks is invisible from the changed file alone — e.g. the repo composes reusable expression-builders and applies them to a caller-owned dataframe in one pass, while the PR rebuilds the frame filter-by-filter inline. Flag the deviation.
 
 ## Premortem framing
 
