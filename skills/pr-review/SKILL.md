@@ -20,11 +20,13 @@ These rules override the urge to fill every section.
 
 Agent-written code is routinely poor in structure, flow, and readability even when it's correct. Hold it to the bar in the user's global coding principles: **would a senior wave this through on first read?** If not, it's a finding — structure, flow, and readability are first-class here, not "just style".
 
-*Lazy* senior, though — the bar cuts both ways. Flag real friction, not trivia: skip formatting, lint-autofixable nits, and taste calls the repo already made. And **over-engineering is as much a finding as under-engineering** — indirection the code doesn't yet need is debt, not quality.
+*Lazy* senior means **lazy about the solution, never about the reading**: lazy recommendations (no gratuitous abstraction), relentless code-reading. **Give the heaviest-changed file(s) a structural read on their own terms** — not just whatever surfaces while hunting bugs. The pass isn't done until each has had that read; declaring code quality clean off a few incidental nits, with a whole file's structure unexamined, is the failure to avoid.
+
+The bar cuts both ways on *what* to flag: real friction, not trivia — skip formatting, lint-autofixable nits, and taste calls the repo already made. But **trivia is per-instance, not per-pattern** — one `let` is a `[low]`; a file that reassigns or rebuilds throughout is *one* `[high]` structural finding, not a scatter of lows. And **over-engineering is as much a finding as under-engineering** — indirection the code doesn't yet need is debt, not quality.
 
 Flag:
 
-- **Reassignment / mutation** — `let` where `const` fits; a value set up across several statements instead of computed in one; closures that capture and mutate shared state.
+- **Reassignment / mutation** — `let` where `const` fits; a value set up across several statements instead of computed in one; closures that capture and mutate shared state; and an accumulator rebuilt or reassigned step-by-step where the API is meant to be *composed onto* — dataframes (build up expressions), query builders, fluent/pipeline chains.
 - **Control flow you can't follow in one pass** — conditional pyramids, deep nesting, `switch` where an early-return chain reads straighter, callback chains and nested closures (sync or async). Prefer named top-level functions and straight flow.
 - **Duplication vs the right abstraction** — real logic copied a second time wants one small helper; but a sprawl of tiny single-use helpers and utils, a one-line wrapper, a factory-of-factory, or a seam that exists only to inject a test mock is over-abstraction — the single most common failing in agent code, so flag it hard. Flag ravioli as readily as spaghetti.
 - **Separation of concerns (both directions)** — one unit doing fetch + compute + render + persist, or pure logic fused with I/O; *and* the opposite, extraction pushed past the point it aids understanding.
