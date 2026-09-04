@@ -27,12 +27,18 @@ The bar cuts both ways on *what* to flag: real friction, not trivia — skip for
 Flag:
 
 - **Reassignment / mutation** — `let` where `const` fits; a value set up across several statements instead of computed in one; closures that capture and mutate shared state; and an accumulator rebuilt or reassigned step-by-step where the API is meant to be *composed onto* — dataframes (build up expressions), query builders, fluent/pipeline chains.
-- **Control flow you can't follow in one pass** — conditional pyramids, deep nesting, `switch` where an early-return chain reads straighter, callback chains and nested closures (sync or async). Prefer named top-level functions and straight flow.
-- **Duplication vs the right abstraction** — real logic copied a second time wants one small helper; but a sprawl of tiny single-use helpers and utils, a one-line wrapper, a factory-of-factory, or a seam that exists only to inject a test mock is over-abstraction — the single most common failing in agent code, so flag it hard. Flag ravioli as readily as spaghetti.
+- **Control flow you can't follow in one pass** — conditional pyramids, deep nesting, `switch` where an early-return chain reads straighter, callback chains and nested closures (sync or async). Prefer named top-level functions and straight flow. Two named tells, both common in agent code and both `[high]` on their own: a **function that mutates an accumulator passed in as an argument** instead of returning what it computed (`f(value, key, collected)` then inspecting `collected`) — worse when the function recurses; and a **`let changed = false` + inner `.map` + `changed ? {...x, y} : x`** identity-preserving dance. One of those is a smell, the same shape appearing two or three times in one diff is one structural finding, not a scatter of lows.
+- **Duplication vs the right abstraction** — real logic copied a second time wants one small helper; but a sprawl of tiny single-use helpers and utils, a one-line wrapper, a factory-of-factory, or a seam that exists only to inject a test mock is over-abstraction — the single most common failing in agent code, so flag it hard. Flag ravioli as readily as spaghetti. Check every new helper for **caller count and body size**: one caller plus a body that is a single expression, template string, or ternary means inline it, and say so by name. A new file holding five or six functions to serve two or three real exports is the same finding at file scale.
 - **Separation of concerns (both directions)** — one unit doing fetch + compute + render + persist, or pure logic fused with I/O; *and* the opposite, extraction pushed past the point it aids understanding.
 - **Names that mislead** — a name that describes the wrong thing, or needs a comment to be understood.
-- **Comments that narrate *what* instead of *why*.**
+- **Comments that narrate *what* instead of *why*.** Also flag: a comment restating a named constant in words; a doc block that is the PR description pasted onto a symbol; a block re-arguing why the whole file exists, sitting on one function inside it; and a comment asserting a methodology nobody can reproduce ("fitted against X over ~250 samples") when the diff ships no script to re-run it — either commit the derivation and point one line at it, or cut to the one line a reader can't derive. Name the comments that *earn* their place only to justify keeping them; don't list them as praise.
 - **YAGNI** — speculative generality: single-member "extensible" unions, parameters built for a future that isn't here or only to satisfy a test.
+
+**Three counts to run on the heaviest-changed file(s), every review.** They are cheap, they catch what a read glosses over, and skipping them is how a code-quality pass ends up clean on a file that isn't:
+
+1. **Comment lines vs total lines.** If a new file is over roughly a quarter comments, or over the density the repo's own written rule sets, that's a finding with the ratio quoted.
+2. **Callers per new helper.** Single-caller one-liners get named and inlined.
+3. **Repeats of each new closure/mutation shape.** Two or more copies is one structural finding.
 
 Severity: quality issues that shelter a bug (a mega-function hiding one, mutation causing a race) rank with bugs; the rest go in the `Code quality` output section, most-impactful first.
 
