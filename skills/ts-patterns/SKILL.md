@@ -1,6 +1,6 @@
 ---
 name: ts-patterns
-description: Personal TypeScript architectural defaults applied to any TS Claude writes for the user. Forbids `any`, unsafe `as` casts, `enum`, and boolean-flag parameters. Prefers `type` over `interface` (except React function component props), functions over classes, discriminated unions with a `: never` exhaustiveness guard, and named design patterns where they fit. Stays library-agnostic. Use when writing or editing TypeScript (`.ts`/`.tsx` files) or producing TS code, including React components. General structure/flow/readability rules (const, early exits, no duplication) live in the global coding principles, not here. Defer to per-repo CLAUDE.md or established conventions when they conflict.
+description: "Personal TypeScript architectural defaults applied to any TS Claude writes for the user. Forbids `any`, unsafe `as` casts, `enum`, and boolean-flag parameters. Prefers `type` over `interface` (except React function component props), functions over classes, discriminated unions with a `: never` exhaustiveness guard, and named design patterns where they fit. Stays library-agnostic. Use when writing or editing TypeScript (`.ts`/`.tsx` files) or producing TS code, including React components. General structure/flow/readability rules (const, early exits, no duplication) live in the global coding principles, not here. Defer to per-repo CLAUDE.md or established conventions when they conflict."
 ---
 
 # TypeScript Patterns
