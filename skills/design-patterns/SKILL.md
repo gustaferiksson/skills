@@ -44,4 +44,3 @@ Link: <refactoring.guru URL>
 - The user is choosing a library / framework — that's not a pattern question.
 - The code is fine. Refactoring for the sake of patterns is anti-value.
 - Small-scale code cleanup — use `/refactor`.
-- Architectural module shape — use `/improve-codebase-architecture`.

@@ -42,8 +42,7 @@ Full techniques index: [refactoring.guru/refactoring/techniques](https://refacto
 
 - Trivial cleanup (rename, retype, typo) — doesn't need a named refactoring.
 - Code that's already clear. The catalog fixes friction, not vibes.
-- Architectural-level moves (deep modules, seams) — use `/improve-codebase-architecture`.
-- Feature work — use `/tdd`. Refactor lives at the green step.
+- Feature work. Refactor lives at the green step.
 
 ## Output shape
 
