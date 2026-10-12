@@ -36,13 +36,13 @@ Flag:
 
 **Three counts to run on the heaviest-changed file(s), every review.** They are cheap, they catch what a read glosses over, and skipping them is how a code-quality pass ends up clean on a file that isn't:
 
-1. **Comment lines vs total lines.** If a new file is over roughly a quarter comments, or over the density the repo's own written rule sets, that's a finding with the ratio quoted.
+1. **Comments added in the diff.** Any added comment that doesn't meet the CLAUDE.md exception (a fact the code and its names can't carry) is a finding; quote the count.
 2. **Callers per new helper.** Single-caller one-liners get named and inlined.
 3. **Repeats of each new closure/mutation shape.** Two or more copies is one structural finding.
 
 Severity: quality issues that shelter a bug (a mega-function hiding one, mutation causing a race) rank with bugs; the rest go in the `Code quality` output section, most-impactful first.
 
-**Seams with other skills.** This bar is the always-on baseline. When a finding needs a *named* fix, reach for `/refactor` (Fowler smell + technique catalog); when the friction is module depth / testability at the architecture level, that's `/improve-codebase-architecture`. Point at those catalogs — don't restate them.
+**Seams with other skills.** This bar is the always-on baseline. When a finding needs a *named* fix, reach for `/refactor` (Fowler smell + technique catalog). Point at that catalog, don't restate it.
 
 **Conventions.** If the repo has a `CONVENTIONS.md` / `CLAUDE.md`, check against it. Don't go spelunking through unrelated files to reverse-engineer an unwritten house standard — judge against what's written down and what's visible in the diff and its immediate surroundings. Surface only material deviations.
 
