@@ -12,7 +12,7 @@ Investigate the PR, the code around it, and any other repos referenced by or aff
 These rules override the urge to fill every section.
 
 1. **Investigate thoroughly, report slim.** The depth below governs the reading; the output stays short. No process narration, no verification log, no counts, no praise.
-2. **One line per finding** where it fits, two at most: the file/symbol, the defect, the fix. No sub-bullets, no failure-scenario essays.
+2. **Few findings, each standing on its own.** One or two lines: the file/symbol, the cause (not the visible edge), and the alternative. Cut weak findings rather than compressing strong ones; no sub-bullets, no failure-scenario essays.
 3. **Skip empty buckets entirely.** Never manufacture findings to fill one.
 4. **The zoom-out verdict is never skipped.** It is the part that decides whether to do anything at all.
 5. **File placement / naming counts only when it's actively wrong**: broken import resolution, or a deviation from the repo's established layout big enough to confuse maintainers (types in the feature folder while the repo dumps them in a legacy dir; a second stack stood up beside an existing one). It goes in `Fix before merge`.
