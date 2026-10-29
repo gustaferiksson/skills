@@ -1,6 +1,6 @@
 ---
 name: pr-review
-description: Reviews a pull request, surfacing true bugs, code-quality failures, and design failure modes. Investigates code changes, permissions, infra, and naming/structure conventions, then outputs a slim, action-bucketed review (a zoom-out verdict on whether the change should land in this shape, then one-line findings on bugs and lazy-senior-dev code quality grouped by what to do about them, then premortem failure modes). Use when the user asks to review a PR, mentions a PR number or URL, or says "review this PR", "check this PR", or "pr-review".
+description: Reviews a pull request, surfacing true bugs, code-quality failures, and design failure modes. Investigates code changes, permissions, infra, and naming/structure conventions, then outputs a slim, action-bucketed review (a one-word verdict first, a zoom-out section only when the change should be done completely differently, then one-line findings on bugs and lazy-senior-dev code quality grouped by what to do about them, then premortem failure modes). Use when the user asks to review a PR, mentions a PR number or URL, or says "review this PR", "check this PR", or "pr-review".
 ---
 
 # PR Review
@@ -14,7 +14,7 @@ These rules override the urge to fill every section.
 1. **Investigate thoroughly, report slim.** The depth below governs the reading; the output stays short. No process narration, no verification log, no counts, no praise.
 2. **Few findings, each standing on its own.** One or two lines: the file/symbol, the cause (not the visible edge), and the alternative. Cut weak findings rather than compressing strong ones; no sub-bullets, no failure-scenario essays.
 3. **Skip empty buckets entirely.** Never manufacture findings to fill one.
-4. **The zoom-out verdict is never skipped.** It is the part that decides whether to do anything at all.
+4. **The verdict is never skipped; the zoom-out reasoning only prints when it changes the plan.** If the shape is right, the verdict stands alone, with no endorsement.
 5. **File placement / naming counts only when it's actively wrong**: broken import resolution, or a deviation from the repo's established layout big enough to confuse maintainers (types in the feature folder while the repo dumps them in a legacy dir; a second stack stood up beside an existing one). It goes in `Fix before merge`.
 
 ## Code quality — review like a lazy senior dev
@@ -59,21 +59,23 @@ For "Watch out", assume this PR shipped six months ago and something tied to it 
 
 ## Zoom-out framing
 
-Step out one layer and answer: given the larger system this PR sits in, should this change land, and in this shape? Pick one verdict:
+Step out one layer and ask: given the larger system this PR sits in, should this change land, and in this shape? Pick one verdict for the first line:
 
 - **Ship it**: the shape is right; the buckets below are the whole story.
 - **Ship after fixes**: the shape is right but `Fix before merge` items block it.
-- **Reshape**: a meaningfully different shape would avoid the bugs or premortem failures; name it in two or three sentences.
-- **Don't do it**: the change isn't needed, duplicates something existing, or solves the wrong problem; say what to do instead.
+- **Reshape**: a meaningfully different shape would avoid the bugs or premortem failures.
+- **Don't do it**: the change isn't needed, duplicates something existing, or solves the wrong problem.
 
-Back the verdict with one or two sentences of reasoning from the bigger picture, not a recap of the findings.
+Only Reshape and Don't do it earn the `Zoom-out` section: two or three sentences on why and what to do instead. For Ship it / Ship after fixes, the verdict is the bare words, with no reasoning or praise for the shape.
 
 ## Output format
 
 ```
+**Verdict:** <Ship it | Ship after fixes | Reshape | Don't do it>
+
 **PR #XXX:** <name>. <one sentence on what it does>
 
-**Zoom-out:** <verdict>. <1–3 sentences of bigger-picture reasoning; for Reshape / Don't do it, the alternative>
+**Zoom-out:** <1–3 sentences: why, and the alternative>  ← omit unless Reshape / Don't do it
 
 **Fix before merge**
 1. <file/symbol>: <defect>. <fix>.
