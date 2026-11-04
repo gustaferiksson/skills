@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock</title>
+<style>
+:root {
+  --c-ink: #242424;
+  --c-fg: #242424;
+  --c-fg2: #424242;
+  --c-muted: #707070;
+  --c-stroke: #e0e0e0;
+  --c-stroke-strong: #d1d1d1;
+  --c-subtle: #f5f5f5;
+  --c-track: #ececec;
+  --c-bg: #ffffff;
+  --c-canvas: #e8e8e8;
+  --c-alt: #b25e00;
+}
+* { box-sizing: border-box }
+body { margin: 0; background: var(--c-canvas); color: var(--c-fg); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif }
+button { font: inherit; color: inherit }
+[hidden] { display: none !important }
+
+.bar { position: sticky; top: 0; z-index: 10; display: flex; gap: 16px; align-items: center; height: 56px; padding: 0 24px; background: var(--c-bg); border-bottom: 1px solid var(--c-stroke) }
+.bar b { font-size: 15px; white-space: nowrap }
+.code { flex: 1; max-width: 720px; margin-left: auto; display: flex; gap: 8px }
+.code input { flex: 1; min-width: 0; font: 12px ui-monospace, Menlo, monospace; padding: 7px 10px; border: 1px solid var(--c-stroke-strong); border-radius: 6px; background: var(--c-subtle) }
+.btn-ink { padding: 7px 14px; border: 0; border-radius: 6px; background: var(--c-ink); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; min-width: 92px }
+.ghost { padding: 3px 9px; border: 1px solid var(--c-stroke-strong); border-radius: 6px; background: var(--c-bg); font-size: 12px; cursor: pointer; white-space: nowrap }
+.ghost:hover { background: var(--c-subtle) }
+
+.viewdock { position: sticky; top: 56px; z-index: 9; height: 0; display: flex; justify-content: center; align-items: flex-start; pointer-events: none }
+.viewpill { pointer-events: auto; display: inline-flex; align-items: center; gap: 2px; margin-top: 12px; padding: 4px; border-radius: 999px; background: rgb(255 255 255 / .85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgb(0 0 0 / .06); box-shadow: 0 6px 20px rgb(0 0 0 / .12), 0 1px 3px rgb(0 0 0 / .08) }
+.vopt { position: relative; cursor: pointer; display: flex }
+.vopt input { position: absolute; opacity: 0; pointer-events: none }
+.vopt span { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 14px 0 11px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--c-fg2) }
+.vopt:hover input:not(:checked) + span { background: var(--c-subtle) }
+.vopt input:checked + span { background: var(--c-ink); color: #fff; box-shadow: 0 2px 6px rgb(0 0 0 / .25) }
+.vopt input:focus-visible + span { outline: 2px solid var(--c-ink); outline-offset: 2px }
+.vzoom { font-size: 11px; font-weight: 600; color: var(--c-muted); padding: 0 10px 0 4px }
+
+.stage { padding: 76px 24px 24px; display: flex; justify-content: center }
+.stage.no-views { padding-top: 48px }
+#preview { min-width: 0 }
+
+.pop { position: fixed; bottom: 20px; z-index: 8; max-height: calc(100vh - 100px); overflow: hidden auto; background: var(--c-bg); border: 1px solid var(--c-stroke); border-radius: 10px; box-shadow: 0 8px 24px rgb(0 0 0 / .16) }
+.pop.right { right: 20px; width: 540px; max-width: calc(100vw - 40px) }
+.pop.left { left: 20px; width: 320px }
+.pop-h { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 10px 8px 16px; background: var(--c-bg) }
+.pop-h b { font-size: 13px }
+.pop-h > span { display: flex; gap: 6px; align-items: center }
+.min { width: 26px; height: 26px; border: 1px solid var(--c-stroke-strong); border-radius: 6px; background: var(--c-bg); cursor: pointer; line-height: 1 }
+.pop-b { padding: 0 16px 14px; display: grid; gap: 8px }
+.pop.collapsed { width: auto }
+.pop.collapsed .pop-b, .pop.collapsed .ghost { display: none }
+.pop .hint { font-size: 11px; color: var(--c-muted); margin: 4px 0 0 }
+
+.grp { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--c-muted); margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--c-stroke) }
+.grp:first-child { border-top: 0; margin-top: 0; padding-top: 2px }
+.set { display: flex; align-items: center; gap: 10px; min-width: 0 }
+.tools { display: flex; flex: none }
+.tool { width: 24px; height: 24px; border: 0; border-radius: 4px; background: none; color: var(--c-muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; opacity: .45 }
+.tool:hover { background: var(--c-subtle) }
+.set:hover .tool, .tool.on { opacity: 1 }
+.tool.on { color: var(--c-ink) }
+.tool.alt.on { color: var(--c-alt) }
+.set-l { width: 110px; flex: none; font-size: 12px; font-weight: 500; color: var(--c-fg2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.lv { display: none; font-size: 12px; font-weight: 600; color: var(--c-muted) }
+.set.locked .segs { display: none }
+.set.locked .lv { display: inline }
+.set.locked .set-l { color: var(--c-muted) }
+.hide-locked .set.locked { display: none }
+
+.segs { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 2px; border-radius: 8px; background: var(--c-track); min-width: 0 }
+.sg { position: relative; display: flex; cursor: pointer }
+.sg input { position: absolute; opacity: 0; pointer-events: none }
+.sg span { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 9px; border-radius: 6px; font-size: 12px; line-height: 1; white-space: nowrap; color: var(--c-fg2) }
+.sg:hover input:not(:checked) + span { background: rgb(0 0 0 / .05) }
+.sg input:checked + span { background: var(--c-ink); color: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .2) }
+.sg input:focus-visible + span { outline: 2px solid var(--c-ink); outline-offset: 1px }
+.today { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: .6 }
+
+.noteta { position: fixed; z-index: 20; width: 320px; height: 90px; padding: 8px 10px; font-size: 12px; line-height: 1.4; font-family: inherit; border: 1px solid var(--c-stroke-strong); border-radius: 8px; resize: none; background: var(--c-bg); box-shadow: 0 6px 18px rgb(0 0 0 / .18) }
+.noteg { width: 100%; min-height: 30px; padding: 6px 8px; font-size: 12px; line-height: 1.4; font-family: inherit; border: 1px solid var(--c-stroke-strong); border-radius: 6px; resize: none; overflow: hidden }
+textarea:focus-visible { outline: 2px solid var(--c-ink); outline-offset: -1px }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+<style>
+/* REPLACE: preview styles. Copy the target project's tokens, font, radii and component look. */
+.app { --fg: #1f1f1f; --fg2: #5c5c5c; --line: #e6e6e6; --soft: #f6f6f6; --primary: #242424; display: flex; min-height: 640px; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgb(0 0 0 / .12); overflow: hidden; color: var(--fg) }
+.i { display: inline-block; vertical-align: middle; width: 16px; height: 16px; flex: none; background: currentColor; -webkit-mask: var(--u) center / contain no-repeat; mask: var(--u) center / contain no-repeat }
+.nav { width: 220px; flex: none; padding: 20px 12px; border-right: 1px solid var(--line); background: var(--soft); display: grid; align-content: start; gap: 2px }
+.nav b { padding: 0 10px 14px; font-size: 15px }
+.nav span { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; color: var(--fg2) }
+.nav .on { background: #fff; color: var(--fg); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / .08) }
+.main { flex: 1; min-width: 0; padding: 24px 28px 32px; display: grid; gap: 16px; align-content: start }
+.card { background: #fff; border: 1px solid var(--line); border-radius: 8px }
+.ph { display: flex; justify-content: space-between; align-items: center; gap: 16px }
+.ph.card { padding: 16px 20px }
+.ph h1 { margin: 0; font-size: 22px }
+.ph p { margin: 2px 0 0; color: var(--fg2) }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
+.b { display: inline-flex; gap: 6px; align-items: center; height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; background: #fff; font-size: 13px; font-weight: 500; white-space: nowrap }
+.b.primary { background: var(--primary); border-color: var(--primary); color: #fff }
+.search { display: flex; gap: 6px; align-items: center; width: 260px; height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--fg2) }
+.chip { display: inline-flex; gap: 6px; align-items: center; height: 26px; padding: 0 6px 0 10px; border-radius: 13px; background: var(--soft); border: 1px solid var(--line); font-size: 12px }
+.split { display: flex; gap: 16px; align-items: flex-start }
+.fpanel { width: 220px; flex: none; padding: 14px; display: grid; gap: 14px; font-size: 13px }
+.fpanel small { display: block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--fg2); margin-bottom: 6px }
+.fpanel label { display: flex; gap: 8px; align-items: center; padding: 2px 0 }
+.tablecard { flex: 1; min-width: 0; overflow: hidden }
+.tbl { width: 100%; border-collapse: collapse }
+.tbl th { text-align: left; font-size: 12px; font-weight: 600; color: var(--fg2); background: var(--soft); padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap }
+.tbl td { padding: 11px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px }
+.tbl.compact td { padding: 6px 14px }
+.tbl .n { text-align: right; font-variant-numeric: tabular-nums }
+.tbl tr:last-child td { border-bottom: 0 }
+.st { display: inline-flex; gap: 6px; align-items: center; font-size: 13px }
+.st.badge { padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600 }
+.st .d { width: 8px; height: 8px; border-radius: 50% }
+.ok { --tone: #2e7d32 } .wait { --tone: #b26a00 } .bad { --tone: #c62828 }
+.st.badge { background: color-mix(in srgb, var(--tone) 12%, #fff); color: var(--tone) }
+.st .d { background: var(--tone) }
+.acts { display: inline-flex; gap: 12px; color: var(--fg2); font-size: 13px }
+.empty { text-align: center; color: var(--fg2); padding: 40px !important }
+</style>
+</head>
+<body>
+<div class="bar">
+  <b id="title"></b>
+  <div class="code"><input id="code" readonly aria-label="Code"><button type="button" class="btn-ink" id="copy">Copy code</button></div>
+</div>
+<div class="pop right" id="setpop"><div class="pop-h"><b>Settings</b><span><button type="button" class="ghost" id="clearnotes" title="Clear every note of this round, including the general one">Clear notes</button><button type="button" class="ghost" id="hidelocked">Hide locked</button><button type="button" class="min" aria-label="Minimise">–</button></span></div><form class="pop-b" id="controls"></form></div>
+<div class="pop left" id="pvpop"><div class="pop-h"><b>Preview data</b><button type="button" class="min" aria-label="Minimise">–</button></div><div class="pop-b"><form id="pvform" class="pop-b" style="padding:0"></form><p class="hint">Only changes the preview, never the code.</p></div></div>
+<div class="viewdock" id="viewdock"><div class="viewpill" id="viewctl"></div></div>
+<div class="stage" id="stage"><div id="preview"></div></div>
+
+<script>
+/* REPLACE: config */
+const TITLE = "Orders page"
+const STORE = "orders-mock"
+const ROUND = "r1"
+const OPTIONS = [
+  { key: "hdr", group: "Page", label: "Header", opts: [["flat", "Flat", "Title on the page background", 1], ["card", "Card", "Title inside a card"]] },
+  { key: "flt", label: "Filters", opts: [["bar", "Toolbar", "Filter buttons next to search", 1], ["side", "Side panel", "Filters in a panel left of the table"], ["chips", "Chips", "Active filters as removable chips under search"]] },
+  { key: "st", group: "Table", label: "Status", opts: [["text", "Text", "Plain text", 1], ["badge", "Badge", "Tinted badge"], ["dot", "Dot", "Coloured dot and text"]] },
+  { key: "dens", label: "Density", opts: [["comfy", "Comfy", "Roomy rows", 1], ["compact", "Compact", "Tight rows, more per screen"]] },
+  { key: "act", label: "Row actions", opts: [["menu", "Menu", "One overflow menu per row", 1], ["inline", "Inline", "Edit and delete as icon buttons"]] },
+]
+const DEFAULT = { hdr: "flat", flt: "bar", st: "text", dens: "comfy", act: "menu" }
+const DEFAULT_LOCKED = []
+const PREVIEW = [
+  { key: "rows", label: "Rows", opts: [["empty", "Empty"], ["few", "5"], ["many", "40"]] },
+  { key: "text", label: "Names", opts: [["short", "Short"], ["long", "Long"]] },
+]
+const PV_DEFAULT = { rows: "few", text: "short" }
+const VIEWPORTS = [
+  { value: "1366", label: "Small", icon: "laptop", title: "Laptop, 1366 px screen" },
+  { value: "1680", label: "Medium", icon: "monitor", title: "Desktop, 1680 px screen", checked: true },
+  { value: "full", label: "Full width", icon: "full", title: "Fills the browser window" },
+]
+
+/* REPLACE: preview. renderPreview(c, pv) gets the chosen settings and preview data, returns HTML. */
+const ICON_BASE = "https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/"
+const ic = name => `<span class="i" style="--u:url(${ICON_BASE}${name}.svg)"></span>`
+const ORDERS = [
+  ["#10482", "Acme Corp", "Northwind Traders International Holdings, Western Region", "Nov 2", 3, "1 240.00", "ok", "Shipped"],
+  ["#10481", "Globex", "Globex Corporation Procurement and Facilities Department", "Nov 2", 1, "89.90", "wait", "Pending"],
+  ["#10480", "Initech", "Initech Software Solutions Customer Success Team", "Nov 1", 12, "4 312.50", "ok", "Shipped"],
+  ["#10479", "Umbrella", "Umbrella Pharmaceuticals Regional Distribution Centre", "Oct 31", 2, "310.00", "bad", "Cancelled"],
+  ["#10478", "Hooli", "Hooli Infrastructure and Data Centre Operations", "Oct 31", 7, "2 015.75", "wait", "Pending"],
+]
+const renderPreview = (c, pv) => {
+  const { rows: volume = "few", text = "short" } = pv
+  const count = { empty: 0, few: 5, many: 40 }[volume]
+  const rows = Array.from({ length: count }, (_, i) => ORDERS[i % ORDERS.length])
+  const status = ([, , , , , , tone, label]) => c.st === "badge" ? `<span class="st badge ${tone}">${label}</span>`
+    : c.st === "dot" ? `<span class="st ${tone}"><i class="d"></i>${label}</span>`
+    : `<span class="st">${label}</span>`
+  const actions = c.act === "inline" ? `<span class="acts">${ic("pencil")}${ic("trash-2")}</span>` : `<span class="acts">${ic("ellipsis")}</span>`
+  const body = rows.length === 0
+    ? `<tr><td colspan="7" class="empty">No orders yet</td></tr>`
+    : rows.map(r => `<tr><td><b>${r[0]}</b></td><td>${text === "long" ? r[2] : r[1]}</td><td>${r[3]}</td><td class="n">${r[4]}</td><td class="n">${r[5]}</td><td>${status(r)}</td><td class="n">${actions}</td></tr>`).join("")
+  const table = `<div class="card tablecard"><table class="tbl ${c.dens}"><thead><tr><th>Order</th><th>Customer</th><th>Date</th><th class="n">Items</th><th class="n">Total</th><th>Status</th><th></th></tr></thead><tbody>${body}</tbody></table></div>`
+  const search = `<span class="search">${ic("search")} Search orders</span>`
+  const toolbar = c.flt === "bar"
+    ? `<div class="row">${search}<span class="b">${ic("list-filter")} Status</span><span class="b">${ic("users")} Customer</span><span class="b">${ic("filter")} More filters</span></div>`
+    : c.flt === "chips"
+      ? `<div class="row">${search}<span class="b">${ic("filter")} Filter</span></div><div class="row"><span class="chip">Status is Pending ${ic("x")}</span><span class="chip">Last 30 days ${ic("x")}</span></div>`
+      : `<div class="row">${search}</div>`
+  const sidePanel = `<div class="card fpanel"><div><small>Status</small><label><input type="checkbox" checked> Pending</label><label><input type="checkbox"> Shipped</label><label><input type="checkbox"> Cancelled</label></div><div><small>Date</small><label><input type="radio" name="d" checked> Last 30 days</label><label><input type="radio" name="d"> This year</label></div></div>`
+  const header = `<div class="ph ${c.hdr === "card" ? "card" : ""}"><div><h1>Orders</h1><p>${count} orders</p></div><div class="row"><span class="b">${ic("download")} Export</span><span class="b primary">${ic("plus")} New order</span></div></div>`
+  return `<div class="app"><nav class="nav"><b>Acme admin</b><span>${ic("chart-column")} Dashboard</span><span class="on">${ic("inbox")} Orders</span><span>${ic("package")} Products</span><span>${ic("users")} Customers</span><span>${ic("settings")} Settings</span></nav>
+    <main class="main">${header}${toolbar}${c.flt === "side" ? `<div class="split">${sidePanel}${table}</div>` : table}</main></div>`
+}
+/* END REPLACE */
+
+const SVG = {
+  lockOpen: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>',
+  lockClosed: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  note: '<path d="M5 4h14v11l-5 5H5z"/><path d="M14 20v-5h5"/>',
+  bulb: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
+  laptop: '<rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/>',
+  monitor: '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M9 20h6M12 16v4"/>',
+  full: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+}
+const svg = (name, size = 14) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${SVG[name]}</svg>`
+const load = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback } catch { return fallback } }
+const save = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)) } catch {} }
+const KEYS = { locked: `${STORE}-locked`, alt: `${STORE}-alt-${ROUND}`, notes: `${STORE}-notes-${ROUND}`, choice: `${STORE}-choice-${ROUND}` }
+
+document.title = TITLE
+document.getElementById("title").textContent = TITLE
+const locked = new Set(load(KEYS.locked, DEFAULT_LOCKED))
+const wantsAlt = new Set(load(KEYS.alt, []))
+const notes = load(KEYS.notes, {})
+const savedChoice = load(KEYS.choice, {})
+const chosen = Object.fromEntries(OPTIONS.map(o => [o.key, o.opts.some(([v]) => v === savedChoice[o.key]) ? savedChoice[o.key] : DEFAULT[o.key] ?? o.opts[0][0]]))
+
+const segs = (o, checked) => `<div class="segs">${o.opts.map(([v, label, hint, today]) => `<label class="sg"${hint ? ` title="${hint}${today ? " (today)" : ""}"` : ""}><input type="radio" name="${o.key}" value="${v}"${checked === v ? " checked" : ""}><span>${label}${today ? '<i class="today"></i>' : ""}</span></label>`).join("")}</div>`
+const form = document.getElementById("controls")
+form.innerHTML = OPTIONS.map(o => `${o.group ? `<div class="grp">${o.group}</div>` : ""}<div class="set" data-key="${o.key}"><span class="tools"><button type="button" class="tool lock" data-key="${o.key}"></button><button type="button" class="tool note" data-key="${o.key}">${svg("note")}</button><button type="button" class="tool alt" data-key="${o.key}">${svg("bulb")}</button></span><span class="set-l" title="${o.label}">${o.label}</span><span class="lv"></span>${segs(o, chosen[o.key])}<textarea class="noteta" data-key="${o.key}" placeholder="Note on ${o.label.toLowerCase()}" hidden></textarea></div>`).join("")
+  + `<div class="grp">General note</div><textarea class="noteg" data-key="general" rows="1" placeholder="Anything else"></textarea>`
+
+const pvform = document.getElementById("pvform")
+pvform.innerHTML = PREVIEW.map(o => `<div class="set"><span class="set-l">${o.label}</span>${segs(o, PV_DEFAULT[o.key] ?? o.opts[0][0])}</div>`).join("")
+document.getElementById("pvpop").hidden = PREVIEW.length === 0
+
+const generalNote = form.querySelector(".noteg")
+const growGeneral = () => { generalNote.style.height = "auto"; generalNote.style.height = `${generalNote.scrollHeight}px` }
+form.querySelectorAll(".noteta, .noteg").forEach(ta => {
+  ta.value = notes[ta.dataset.key] ?? ""
+  ta.addEventListener("input", () => {
+    notes[ta.dataset.key] = ta.value
+    save(KEYS.notes, notes)
+    if (ta === generalNote) growGeneral()
+    render()
+  })
+  if (ta === generalNote) return
+  ta.addEventListener("blur", () => { ta.hidden = true })
+  ta.addEventListener("keydown", e => { if (e.key === "Escape") ta.blur() })
+})
+requestAnimationFrame(growGeneral)
+
+const toggleNote = button => {
+  const ta = form.querySelector(`.noteta[data-key="${button.dataset.key}"]`)
+  ta.hidden = !ta.hidden
+  if (ta.hidden) return
+  const box = button.getBoundingClientRect()
+  ta.style.left = `${Math.max(8, box.left - 330)}px`
+  ta.style.top = `${box.bottom + 96 > window.innerHeight ? box.top - 96 : box.bottom + 6}px`
+  ta.focus()
+}
+form.addEventListener("mousedown", e => { if (e.target.closest(".note")) e.preventDefault() })
+form.addEventListener("click", e => {
+  const button = e.target.closest(".tool")
+  if (button == null) return
+  const key = button.dataset.key
+  if (button.classList.contains("note")) return toggleNote(button)
+  const [own, other] = button.classList.contains("lock") ? [locked, wantsAlt] : [wantsAlt, locked]
+  if (own.has(key)) own.delete(key)
+  else { own.add(key); other.delete(key) }
+  save(KEYS.locked, [...locked])
+  save(KEYS.alt, [...wantsAlt])
+  render()
+})
+
+document.getElementById("clearnotes").addEventListener("click", () => {
+  Object.keys(notes).forEach(key => { delete notes[key] })
+  save(KEYS.notes, notes)
+  form.querySelectorAll(".noteta, .noteg").forEach(ta => { ta.value = "" })
+  growGeneral()
+  render()
+})
+document.getElementById("hidelocked").addEventListener("click", e => {
+  const hidden = document.getElementById("setpop").classList.toggle("hide-locked")
+  e.currentTarget.textContent = hidden ? "Show locked" : "Hide locked"
+})
+document.querySelectorAll(".pop .min").forEach(button => button.addEventListener("click", () => {
+  button.textContent = button.closest(".pop").classList.toggle("collapsed") ? "+" : "–"
+}))
+
+const viewctl = document.getElementById("viewctl")
+viewctl.innerHTML = VIEWPORTS.map(v => `<label class="vopt" title="${v.title}"><input type="radio" name="view" value="${v.value}"${v.checked ? " checked" : ""}><span>${svg(v.icon)}${v.label}</span></label>`).join("") + `<span class="vzoom" id="zoom"></span>`
+document.getElementById("viewdock").hidden = VIEWPORTS.length === 0
+document.getElementById("stage").classList.toggle("no-views", VIEWPORTS.length === 0)
+const fitView = () => {
+  const preview = document.getElementById("preview")
+  const zoom = document.getElementById("zoom")
+  const choice = viewctl.querySelector("input:checked")?.value
+  if (choice == null || choice === "full") {
+    preview.style.width = choice === "full" ? "100%" : ""
+    preview.style.zoom = 1
+    zoom.textContent = ""
+    return
+  }
+  const width = Number(choice)
+  const scale = Math.min(1, (document.getElementById("stage").clientWidth - 48) / width)
+  preview.style.width = `${width}px`
+  preview.style.zoom = scale
+  zoom.textContent = scale < 1 ? `${Math.round(scale * 100)}%` : ""
+}
+viewctl.addEventListener("change", fitView)
+window.addEventListener("resize", fitView)
+fitView()
+
+const noteLines = () => [...OPTIONS.map(o => o.key), "general"]
+  .filter(key => (notes[key] ?? "").trim() !== "")
+  .map(key => `${key}: ${notes[key].trim()}`)
+const codeInput = document.getElementById("code")
+const render = () => {
+  const c = Object.fromEntries(new FormData(form))
+  save(KEYS.choice, c)
+  document.getElementById("preview").innerHTML = renderPreview(c, Object.fromEntries(new FormData(pvform)))
+  codeInput.dataset.code = OPTIONS.map(o => `${o.key}=${c[o.key]}${locked.has(o.key) ? "!" : wantsAlt.has(o.key) ? "?" : ""}`).join(" ")
+  const noteCount = noteLines().length
+  codeInput.value = noteCount > 0 ? `${codeInput.dataset.code}   + ${noteCount} note${noteCount > 1 ? "s" : ""}` : codeInput.dataset.code
+  OPTIONS.forEach(o => {
+    const row = form.querySelector(`.set[data-key="${o.key}"]`)
+    const isLocked = locked.has(o.key)
+    const note = (notes[o.key] ?? "").trim()
+    row.classList.toggle("locked", isLocked)
+    row.querySelector(".lv").textContent = o.opts.find(([v]) => v === c[o.key])?.[1] ?? ""
+    const lock = row.querySelector(".lock")
+    lock.innerHTML = svg(isLocked ? "lockClosed" : "lockOpen")
+    lock.classList.toggle("on", isLocked)
+    lock.title = isLocked ? "Unlock" : "Lock this choice"
+    const noteButton = row.querySelector(".note")
+    noteButton.classList.toggle("on", note !== "")
+    noteButton.title = note !== "" ? note : "Add a note"
+    const alt = row.querySelector(".alt")
+    alt.classList.toggle("on", wantsAlt.has(o.key))
+    alt.title = wantsAlt.has(o.key) ? "Alternatives requested" : "Ask for alternatives"
+  })
+}
+form.addEventListener("change", render)
+pvform.addEventListener("change", render)
+
+const copyButton = document.getElementById("copy")
+const copied = () => {
+  copyButton.textContent = "Copied"
+  setTimeout(() => { copyButton.textContent = "Copy code" }, 1500)
+}
+copyButton.addEventListener("click", () => {
+  const text = [codeInput.dataset.code, ...noteLines()].join("\n")
+  navigator.clipboard.writeText(text).then(copied).catch(() => {
+    const scratch = Object.assign(document.createElement("textarea"), { value: text })
+    document.body.append(scratch)
+    scratch.select()
+    document.execCommand("copy")
+    scratch.remove()
+    copied()
+  })
+})
+render()
+</script>
+</body>
+</html>
