@@ -1,11 +1,11 @@
 ---
 name: briefing
-description: "Writes a local HTML briefing: a calm stepper that asks one plain-language question per screen, marks Claude's recommended option, and sends the answers straight back to the session with one click. Use when Claude needs decisions or input that are more than one-liners, has several related questions at once, or wants a plan, proposal, migration or design reviewed before acting. For one or two simple choices, use the built-in AskUserQuestion picker instead."
+description: "Writes a local HTML briefing: a one-page memo that states the ask, then plain-language question cards grouped by theme, each with Claude's recommended option marked, and sends the answers straight back to the session with one click. Use when Claude needs decisions or input that are more than one-liners, has several related questions at once, or wants a plan, proposal, migration or design reviewed before acting. For one or two simple choices, use the built-in AskUserQuestion picker instead."
 ---
 
 # Briefing
 
-A local page the user clicks through at their own pace: an intro screen, one question per screen, and a review screen listing every answer, with skipped questions marked. **Send to Claude** delivers the answers to the session as the output of a background task.
+A local page the user reads top to bottom: a memo that says what you need and why, a collapsed list of what is already settled, then question cards grouped by theme. A sticky left column shows every question, the progress and **Send to Claude**, which delivers the answers to the session as the output of a background task.
 
 ## Page or picker
 
@@ -16,38 +16,49 @@ A local page the user clicks through at their own pace: an intro screen, one que
 
 The user has little spare attention. Every rule below exists to save it.
 
-1. **Ask few questions.** Only what needs the user's judgment. Everything else (facts, obvious fixes, things you would do anyway) goes into `asIs`, one collapsed "already decided" list on the intro screen. Aim for under 12 questions; if you have more, decide more yourself or split into rounds.
+1. **Ask few questions.** Only what needs the user's judgment. Everything else (facts, obvious fixes, things you would do anyway) goes into `asIs`, the collapsed "already settled" list under the memo. Aim for under 12 questions; if you have more, decide more yourself, batch them, or split into rounds. Many similar items (files, rows, findings) become one batch question ("Delete these 55?") with options like approve all, let me pick (note), not now, and the item list under evidence.
 2. **Nothing is preselected.** The recommended option carries a tag, but the user picks, or skips what they have no opinion on.
 3. **Plain-language titles.** A question a smart outsider understands: no IDs, no jargon, no file names, no internal codes. "Should the three copies of the filter code become one?", not "L2: consolidate parseFilters".
 4. **Meaning in 1 or 2 sentences**: what this decides and why it matters.
-5. **"Today:" with a number.** The current state, measured: "11 queries per search", "0 of 40 services have alerts". Numbers, never adjectives.
-6. **2 or 3 options**, each a short label plus one line of consequence. Exactly one tagged recommended. No option needs the details to be understood.
-7. **Evidence behind "Show details"**: file paths, counts, quotes, PRs, what you verified and what you assume. Collapsed; the question must stand without it.
-8. **Notes are always optional** and nuance is welcome; the end screen has an "Anything else" box.
+5. **"Today" with a number.** The current state, measured: "11 queries per search", "0 of 40 services have alerts". Numbers, never adjectives.
+6. **2 or 3 options**, each a short label plus one line of consequence. Exactly one tagged recommended. No option needs the evidence to be understood.
+7. **Evidence behind "Show evidence"**: file paths, counts, quotes, PRs, what you verified and what you assume. Collapsed; the question must stand without it.
+8. **Notes are always optional** and nuance is welcome; each card has "Add a note" and the page ends with an "Anything else?" box.
 
 ## Build
 
-Copy [assets/template.html](assets/template.html) and replace only the `PAGE` object between the `REPLACE` markers. The template does the stepper (progress, Back and Next, keys: Left and Right move screens, Up and Down cycle options, 1 to 9 pick, Enter next, Esc leaves a note, clicking a picked option unpicks it), localStorage drafts, light and dark theme, and the answer text.
+Copy [assets/template.html](assets/template.html) and replace only the `PAGE` object between the `REPLACE` markers. The template does the layout, progress, sidebar links, localStorage drafts, light and dark theme, and the answer text. Clicking a picked option unpicks it.
 
 ```js
 const PAGE = {
-  title: "Speeding up search",
   store: "search-speed-r1",
-  intro: "What this is about and what you found, in 1 to 3 sentences.",
+  eyebrow: "Briefing · search",
+  title: "Help me pick how to make search fast",
+  tldr: "Search takes 4.2 seconds. I found changes that bring it under 1 second; <b>3 need your call.</b>",
+  why: "2 of the last 5 support tickets were search timeouts.",
+  need: "3 choices in 2 themes, about 2 minutes. Each shows what I recommend, but nothing is picked for you. Skip any you have no opinion on.",
+  after: "I make the changes on one branch and open a PR. You review the diff like any other.",
   asIs: ["Add an index on <code>products.updated_at</code> (no behaviour change)."],
-  questions: [
-    { id: "facets", title: "How should the filter counts be calculated?",
-      meaning: "The numbers next to each filter are what make search slow.",
-      today: "11 database queries per search, one per filter.",
-      options: [["All at once", "One query, counted in memory.", true], ["Cache them", "Reuse results for 5 minutes."]],
-      details: "<p>Trace from <code>search-handler.ts:84</code>: 3.6 s of the 4.2 s total.</p>" },
+  groups: [
+    { title: "How results are counted", blurb: "The numbers next to each filter.",
+      questions: [
+        { id: "facets", short: "Filter counts",
+          title: "How should the filter counts be calculated?",
+          meaning: "The numbers next to each filter are what make search slow.",
+          today: "11 database queries per search, one per filter.",
+          options: [["All at once", "One query, counted in memory.", true], ["Cache them", "Reuse results for 5 minutes."]],
+          details: "<p>Trace from <code>search-handler.ts:84</code>: 3.6 s of the 4.2 s total.</p>" },
+      ] },
   ],
 }
 ```
 
-- `id` is for you, never shown. Short and stable: answers come back keyed by it.
-- `true` as the third option element tags the recommendation. The intro screen states the question count and minutes itself.
-- Values are HTML: escape `<` and `&` in code samples. `store` is unique per page; bump it (`-r2`) for a new round with empty drafts.
+- `title` is the ask, stated as what you need from the user, not the page's topic. It is also the first line of the answers.
+- `tldr` is the situation and the count of calls needed; `why` what goes wrong without them; `need` the count, the minutes (about 1.5 questions a minute) and that nothing is preselected; `after` what you do with the answers. `why` and `after` are optional.
+- Groups are themes: 2 to 4, each a plain title and a one-line `blurb`. Use one group when the questions share a theme; the theme labels then disappear.
+- `short` is the 2 to 3 word sidebar label. `id` is for you, never shown. Short and stable: answers come back keyed by it.
+- `true` as the third option element tags the recommendation. A code reference for an option goes at the end of its consequence as `<code class="ref">MetricRepository.deleteMetric</code>`.
+- Values are HTML: escape `<` and `&` in code samples. `store` is unique per page; bump it (`-r2`) for a new round with empty drafts. Helper data for long evidence may sit above `PAGE` inside the markers.
 
 ## Where the file goes
 
@@ -57,7 +68,7 @@ const PAGE = {
 
 ## Send loop
 
-Check it renders: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --virtual-time-budget=2000 --screenshot=<scratch>/shot.png --window-size=900,900 file://<page>`, then look at the image.
+Check it renders: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --virtual-time-budget=2000 --screenshot=<scratch>/shot.png --window-size=1400,1000 file://<page>`, then look at the image. Add `--force-dark-mode` to check dark.
 
 Serve it with the Bash tool and `run_in_background: true`, from the main session (a background command started by a subagent dies when the subagent ends):
 
@@ -69,11 +80,11 @@ The script serves the page on `127.0.0.1` under a random token, opens the browse
 
 ```
 === ANSWERS BEGIN ===
-Speeding up search
+Help me pick how to make search fast
 parser: Merge into one
 facets: Cache them | only for large tenants
 general: ship before Friday
-skipped: cache-ttl, rollout
+skipped: rollout
 === ANSWERS END ===
 ```
 
@@ -89,5 +100,5 @@ skipped: cache-ttl, rollout
 - Skipped is not consent to the recommendation. Decide those yourself only where the stakes are low and say so in the reply; otherwise ask again (picker if simple) or leave them out of the work.
 - A note outranks its pick: "All at once | but not for the export job" is a variant, not a plain yes.
 - Reply with what you will do per answer in one line, and at most one follow-up question.
-- Record the decisions where the work is tracked (issue comment, plan file, decisions log, the project's notes folder) before acting, including the already-decided list. With no tracker, the conversation is the record.
+- Record the decisions where the work is tracked (issue comment, plan file, decisions log, the project's notes folder) before acting, including the already-settled list. With no tracker, the conversation is the record.
 - Follow-up round: same file, only the new and skipped questions, bumped `store`, serve again.

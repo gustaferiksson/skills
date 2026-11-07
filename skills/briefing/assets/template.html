@@ -5,97 +5,208 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Briefing</title>
 <style>
-:root{--bg:#f4f3f0;--card:#fff;--ink:#1a1917;--soft:#44403c;--mute:#78716c;--faint:#b5b0aa;--line:#e7e4df;--acc:#2f5bea;--acc-soft:#eef2fe;--ok:#167a3e;--ok-soft:#e8f6ee;--shadow:0 1px 2px rgba(28,25,23,.04),0 8px 24px rgba(28,25,23,.06)}
-@media (prefers-color-scheme:dark){:root{--bg:#0e0d0c;--card:#181614;--ink:#f3f1ee;--soft:#d6d3d1;--mute:#a8a29e;--faint:#57534e;--line:#2a2724;--acc:#7c9cff;--acc-soft:#1a2340;--ok:#5ad08a;--ok-soft:#10261a;--shadow:none}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
-main{max-width:660px;margin:0 auto;padding:56px 20px 140px}
-[hidden]{display:none !important}
-section{animation:in .18s ease-out}
-@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.eyebrow{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:0 0 10px}
-h1{font-size:32px;line-height:1.2;letter-spacing:-.01em;margin:0 0 14px}
-h2{font-size:26px;line-height:1.25;letter-spacing:-.01em;margin:0 0 14px}
-.meaning{color:var(--soft);margin:0 0 14px}
-.today{display:flex;gap:10px;align-items:baseline;margin:0 0 26px;padding:12px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line);font-size:15.5px;color:var(--soft)}
-.today b{flex:none;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
-.options{display:flex;flex-direction:column;gap:10px;margin:0 0 18px}
-.option{all:unset;box-sizing:border-box;display:grid;grid-template-columns:22px 1fr auto;gap:14px;align-items:start;padding:16px 18px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow);cursor:pointer;transition:border-color .12s,background .12s}
-.option:hover{border-color:var(--faint)}
-.option:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
-.option .radio{width:20px;height:20px;margin-top:3px;border-radius:50%;border:1.5px solid var(--faint);display:grid;place-items:center}
-.option.on{border-color:var(--acc);background:var(--acc-soft)}
-.option.on .radio{border-color:var(--acc);background:var(--acc)}
-.option.on .radio:after{content:"";width:8px;height:8px;border-radius:50%;background:var(--card)}
-.option .label{font-weight:600}
-.option .d{display:block;color:var(--mute);font-size:15px;margin-top:3px}
-.option .key{font:600 12px ui-monospace,Menlo,monospace;color:var(--faint);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-top:3px}
-.rec{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ok);background:var(--ok-soft);border-radius:99px;padding:2px 8px;margin-left:8px;vertical-align:2px}
-details{margin:0 0 16px}
-summary{cursor:pointer;color:var(--acc);font-size:15px;list-style:none}
-summary::-webkit-details-marker{display:none}
-summary:before{content:"+ "}
-details[open] summary:before{content:"− "}
-.details{margin-top:10px;padding:14px 16px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:15px;color:var(--soft)}
-.details b,.details i{color:var(--ink)}
-.details p:first-child{margin-top:0}.details p:last-child{margin-bottom:0}
-textarea{width:100%;min-height:48px;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;font-size:15px;line-height:1.45;resize:vertical}
-textarea:focus{outline:none;border-color:var(--acc)}
-code{font:13.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg);border:1px solid var(--line);padding:0 5px;border-radius:5px;overflow-wrap:anywhere}
-pre{white-space:pre-wrap;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:13px}
-ul{padding-left:20px}li{margin:5px 0}
-a{color:var(--acc)}
-.summary{display:flex;flex-direction:column;gap:8px;margin:0 0 18px}
-.row{all:unset;box-sizing:border-box;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer}
-.row:hover{border-color:var(--faint)}
-.row .q{font-size:15px;color:var(--soft)}
-.row .a{font-size:14px;font-weight:600;text-align:right}
-.row.skipped .a{color:var(--faint);font-weight:500}
-.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
-.btn{border:0;border-radius:11px;padding:11px 20px;font:inherit;font-size:15.5px;font-weight:600;cursor:pointer;background:var(--acc);color:#fff}
-.btn.secondary{background:var(--card);color:var(--ink);border:1px solid var(--line)}
-.btn:disabled{opacity:.5;cursor:default}
-#status{color:var(--mute);font-size:15px;margin:14px 0 0}
-.nav{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
-.nav-in{max-width:660px;margin:0 auto;padding:12px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center}
-.dots{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
-.dot{all:unset;cursor:pointer;width:22px;height:6px;border-radius:3px;background:var(--line)}
-.dot.done{background:var(--faint)}
-.dot.here{background:var(--acc)}
-.hint{text-align:center;font-size:12px;color:var(--faint);margin-top:6px}
-kbd{font:600 11px ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:4px;padding:0 4px}
-@media (max-width:600px){main{padding-top:32px}h1{font-size:27px}h2{font-size:22px}.option .key,.hint{display:none}.option{grid-template-columns:22px 1fr}}
-@media (prefers-reduced-motion:reduce){section{animation:none}}
+:root {
+  color-scheme: light dark;
+  --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --head: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --bg: #f4efe6; --surface: #fffdf8; --raised: #faf6ee; --ink: #22201c; --fg2: #4a443b; --mute: #7d7467; --faint: #b0a796; --line: #e6dfd1; --line2: #d5ccb9; --acc: #1f3a5f; --acc-ink: #fffdf8; --acc-soft: #eaeef2; --rec: #1f3a5f; --rec-soft: #e7ebef; --track: #ece6da;
+  --fs: 16.5px; --lh: 1.65; --pad: 32px; --gap: 22px; --stack: 18px; --sec: 96px; --h1: 46px; --h2: 26px; --h3: 22px; --top: 88px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #14120f; --surface: #1c1915; --raised: #211e19; --ink: #f1ece2; --fg2: #d3cbbd; --mute: #a39a8a; --faint: #6b6355; --line: #2e2a23; --line2: #3e382f; --acc: #a9c0de; --acc-ink: #14120f; --acc-soft: #1f2731; --rec: #a9c0de; --rec-soft: #212a35; --track: #26221c }
+}
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { margin: 0; background: var(--bg); color: var(--ink); font: var(--fs)/var(--lh) var(--sans); -webkit-font-smoothing: antialiased }
+:where(button) { all: unset; box-sizing: border-box; cursor: pointer }
+button:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; border-radius: 8px }
+p { margin: 0 }
+a { color: var(--acc) }
+code { font: .86em var(--mono); background: var(--track); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere }
+h1, h2, h3 { margin: 0; font-family: var(--head); color: var(--ink); text-wrap: balance }
+h1 { font-size: var(--h1); line-height: 1.1; letter-spacing: -.02em; font-weight: 500 }
+h2 { font-size: var(--h2); line-height: 1.2; letter-spacing: -.005em; font-weight: 560 }
+h3 { font-size: var(--h3); line-height: 1.32; letter-spacing: -.005em; font-weight: 560 }
+.svg { display: inline-block; width: 16px; height: 16px; vertical-align: -3px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mute) }
+
+.shell { max-width: 1120px; margin: 0 auto; padding: var(--top) 24px 0; display: grid; grid-template-columns: 272px minmax(0, 720px); gap: 64px; justify-content: center }
+main { min-width: 0 }
+
+.side { position: sticky; top: var(--top); align-self: start; display: grid; gap: 22px; max-height: calc(100vh - var(--top) - 24px); overflow: auto }
+.side .title { display: grid; gap: 4px }
+.side .title span:last-child { font-size: 13.5px; color: var(--mute) }
+.prog { display: grid; gap: 8px; font-size: 13.5px; color: var(--fg2); font-variant-numeric: tabular-nums }
+.bar { height: 4px; border-radius: 2px; background: var(--track); overflow: hidden }
+.bar i { display: block; width: 0; height: 100%; background: var(--acc); border-radius: 2px; transition: width .2s }
+.toc { display: grid; gap: 14px }
+.toc-g { display: grid; gap: 2px }
+.toc-g > b { font-size: 11px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); padding: 0 8px 6px }
+.toc a { display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: center; padding: 5px 8px; border-radius: 7px; font-size: 13.5px; line-height: 1.4; color: var(--fg2); text-decoration: none }
+.toc a:hover { background: var(--track) }
+.toc a i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--line2) }
+.toc a.done { color: var(--ink) }
+.toc a.done i { background: var(--acc); border-color: var(--acc) }
+.actions { position: sticky; bottom: 0; display: grid; gap: 8px; padding-top: 8px; background: var(--bg) }
+#status { font-size: 13.5px; color: var(--mute) }
+#status:empty { display: none }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: 10px; background: var(--acc); color: var(--acc-ink); font-size: 14.5px; font-weight: 600; white-space: nowrap }
+.btn:hover { filter: brightness(1.08) }
+.btn.ghost { background: none; color: var(--fg2); border: 1px solid var(--line2) }
+.btn[disabled] { opacity: .5; cursor: default }
+
+.hero { display: grid; gap: calc(var(--stack) * 1.4); padding-bottom: var(--sec) }
+.hero .head { display: grid; gap: 14px }
+.memo { display: grid; margin: 8px 0 0; border-top: 1px solid var(--line) }
+.memo > div { display: grid; grid-template-columns: 132px 1fr; gap: 24px; padding: calc(var(--stack) * .95) 0; border-bottom: 1px solid var(--line) }
+.memo dt { font-size: 13px; font-weight: 600; color: var(--mute); padding-top: 2px }
+.memo dd { margin: 0; color: var(--fg2); max-width: 58ch; text-wrap: pretty }
+.memo dd b { color: var(--ink); font-weight: 600 }
+.memo > div:first-child dd { color: var(--ink); font-size: 1.08em }
+
+.settled summary { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--fg2); font-size: 14.5px; cursor: pointer; list-style: none }
+.settled summary::-webkit-details-marker { display: none }
+.settled summary:hover { border-color: var(--line2) }
+.settled summary > .svg { color: var(--mute) }
+.settled summary b { color: var(--ink); font-weight: 600 }
+.settled .more { margin-left: auto; color: var(--mute); font-size: 13.5px; display: inline-flex; gap: 4px; align-items: center; white-space: nowrap }
+.settled .more::before { content: "Show all" }
+.settled[open] .more::before { content: "Hide" }
+.settled[open] .more .svg { transform: rotate(90deg) }
+.settled ul { list-style: none; margin: 8px 0 0; padding: 6px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface) }
+.settled li { display: grid; grid-template-columns: 18px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.5; color: var(--fg2) }
+.settled li:first-child { border-top: 0 }
+.settled li .svg { width: 14px; height: 14px; color: var(--faint); margin-top: 3px }
+
+.group { padding-bottom: var(--sec) }
+.group-h { display: grid; gap: 6px; margin-bottom: calc(var(--stack) * 1.6) }
+.group-h p { color: var(--mute); font-size: 14.5px }
+.qlist { display: grid; gap: var(--gap) }
+
+.q { display: grid; gap: var(--stack); min-width: 0; padding: var(--pad); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; scroll-margin-top: 24px }
+.q.answered { border-color: var(--line2) }
+.qhead { display: grid; gap: 8px }
+.qnum { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--mute); letter-spacing: .02em; font-variant-numeric: tabular-nums }
+.qnum .svg { width: 14px; height: 14px; color: var(--acc); stroke-width: 2.4 }
+.q:not(.answered) .qnum .svg { display: none }
+.meaning { color: var(--fg2); max-width: 62ch; text-wrap: pretty }
+.cur { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: baseline; padding: 2px 0 2px 14px; border-left: 2px solid var(--line2); font-size: .92em; color: var(--fg2); max-width: 64ch }
+.cur b { font-size: 11px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--mute) }
+
+.radios { display: grid; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface) }
+.opt { display: grid; grid-template-columns: 20px 1fr auto; gap: 14px; align-items: start; padding: 14px 16px; border-top: 1px solid var(--line); transition: background .12s }
+.opt:first-child { border-top: 0 }
+.opt:hover { background: var(--raised) }
+.opt:focus-visible { outline-offset: -2px; border-radius: 0 }
+.opt .radio { width: 18px; height: 18px; margin-top: 4px; border-radius: 50%; border: 1.5px solid var(--line2); display: grid; place-items: center; transition: border-color .12s, background .12s }
+.opt:hover .radio { border-color: var(--faint) }
+.opt .lbl { font-weight: 600; color: var(--ink) }
+.opt .desc { display: block; color: var(--mute); font-size: .92em; margin-top: 2px; text-wrap: pretty }
+.opt.on { background: var(--acc-soft) }
+.opt.on .radio { border-color: var(--acc); background: var(--acc) }
+.opt.on .radio::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--acc-ink) }
+.rec { display: inline-flex; align-items: center; height: 20px; margin-top: 3px; padding: 0 7px; border-radius: 5px; background: var(--rec-soft); color: var(--rec); font-size: 11px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap }
+code.ref { display: table; margin-top: 8px; padding: 2px 7px; border-radius: 6px; font-size: 12px; line-height: 1.45; color: var(--mute); overflow-wrap: break-word }
+.opt.on code.ref { background: color-mix(in srgb, var(--acc) 9%, transparent) }
+
+.qfoot { display: flex; gap: 18px; align-items: center; font-size: 13.5px; color: var(--mute) }
+.qfoot button { display: inline-flex; gap: 6px; align-items: center; color: var(--mute) }
+.qfoot button:hover { color: var(--ink) }
+.qfoot .svg { width: 15px; height: 15px }
+.qnote { width: 100%; min-height: 64px; padding: 10px 12px; border: 1px solid var(--line2); border-radius: 10px; background: var(--surface); color: var(--ink); font: 14.5px/1.5 var(--sans); resize: vertical }
+.qnote:focus { outline: none; border-color: var(--acc); box-shadow: 0 0 0 3px var(--acc-soft) }
+.qnote::placeholder { color: var(--faint) }
+.evidence { display: grid; gap: 10px; padding: 16px 18px; border-radius: 12px; background: var(--raised); border: 1px solid var(--line); font-size: 14.5px; line-height: 1.55; color: var(--fg2); overflow-wrap: anywhere }
+.evidence b, .evidence i { color: var(--ink) }
+.evidence ul { margin: 0; padding-left: 20px }
+.evidence li { margin: 4px 0 }
+.evidence table { border-collapse: collapse; width: 100%; font-size: 13.5px }
+.evidence td, .evidence th { border-top: 1px solid var(--line); padding: 6px 8px 6px 0; text-align: left; vertical-align: top }
+.evidence th { color: var(--mute); font-weight: 600; border-top: 0 }
+
+.closing { display: grid; gap: 12px; padding-bottom: 96px }
+.closing h2 { font-size: calc(var(--h2) * .85) }
+.closing > p { color: var(--mute); font-size: 14.5px }
+pre { white-space: pre-wrap; margin: 0; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font: 13px/1.5 var(--mono) }
+
+@media (max-width: 900px) {
+  :root { --h1: 34px; --pad: 22px; --sec: 64px; --top: 40px }
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding: var(--top) 16px 96px }
+  .side { position: fixed; z-index: 5; top: auto; bottom: 0; left: 0; right: 0; max-height: none; overflow: visible; grid-template-columns: 1fr auto; align-items: center; gap: 16px; padding: 12px 16px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line) }
+  .side .title, .toc { display: none }
+  .actions { position: static; grid-template-columns: auto auto; padding: 0; background: none }
+  #status { grid-column: 1 / -1 }
+  .memo > div { grid-template-columns: 1fr; gap: 4px }
+  .opt { grid-template-columns: 20px 1fr }
+  .opt .rec { grid-column: 2; justify-self: start; margin-top: 0 }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
 </style>
 </head>
 <body>
-<main id="screens"></main>
-<div class="nav"><div class="nav-in"><button type="button" class="btn secondary" id="back">Back</button><div><div class="dots" id="dots"></div><div class="hint"><kbd>←</kbd> <kbd>→</kbd> move · <kbd>↑</kbd> <kbd>↓</kbd> or <kbd>1</kbd>–<kbd>9</kbd> choose · <kbd>Enter</kbd> next</div></div><button type="button" class="btn" id="next">Next</button></div></div>
+<div class="shell">
+  <aside class="side">
+    <div class="title"><span class="eyebrow">Your decisions</span><span id="count"></span></div>
+    <div class="prog"><span id="progress"></span><div class="bar"><i id="bar"></i></div></div>
+    <nav class="toc" id="toc"></nav>
+    <div class="actions">
+      <button type="button" class="btn" id="send" hidden>Send to Claude <svg class="svg" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-3-7z"/></svg></button>
+      <button type="button" class="btn ghost" id="copy">Copy answers</button>
+      <p id="status" role="status"></p>
+    </div>
+  </aside>
+  <main id="page"></main>
+</div>
 
 <script>
 /* REPLACE: PAGE */
 const PAGE = {
-  title: "Speeding up search",
   store: "search-speed-r1",
-  intro: "Search takes over 4 seconds for most users. I found three changes that would bring it under 1 second; a few of them need your call first.",
+  eyebrow: "Briefing · search",
+  title: "Help me pick how to make search fast",
+  tldr: "Search takes 4.2 seconds for most users. I found changes that bring it under 1 second; <b>3 of them need your call.</b>",
+  why: "Search is the first thing people use each morning, and 2 of the last 5 support tickets were about it timing out.",
+  need: "3 choices in 2 themes, about 2 minutes. Each shows what I recommend, but nothing is picked for you. Skip any you have no opinion on.",
+  after: "I make the changes from your answers on one branch and open a PR. You review the diff like any other.",
   asIs: [
     "Add an index on <code>products.updated_at</code> (no behaviour change).",
     "Delete the unused <code>legacySearch</code> export (0 callers).",
   ],
-  questions: [
-    { id: "parser", title: "Should the three copies of the filter code become one?",
-      meaning: "Each search page parses filters with its own copy, and the copies disagree on empty ranges.",
-      today: "3 copies, 2 of the last 5 search bugs came from them.",
-      options: [["Merge into one", "Keep the newest copy and point all 9 callers at it.", true], ["Leave as is", "Fix the empty-range bug in each copy instead."]],
-      details: "<p>The copies live in <code>search/utils.ts</code>, <code>export/filters.ts</code> and <code>admin/search.ts</code>. They differ only when the lower bound is above the upper bound. 14 existing tests cover the kept copy.</p>" },
-    { id: "facets", title: "How should the filter counts be calculated?",
-      meaning: "The numbers next to each filter (\"Red (12)\") are what make search slow.",
-      today: "11 database queries per search, one per filter.",
-      options: [["All at once", "One query, counted in memory. Fine up to about 50,000 products.", true], ["Cache them", "Keep one query per filter but reuse results for 5 minutes."], ["Leave as is", "Accept the 4 seconds."]],
-      details: "<p>Trace from <code>search-handler.ts:84</code>: 11 sequential queries, 3.6 s of the 4.2 s total.</p>" },
+  groups: [
+    { title: "How results are counted", blurb: "The numbers next to each filter, which cause most of the delay.",
+      questions: [
+        { id: "facets", short: "Filter counts",
+          title: "How should the filter counts be calculated?",
+          meaning: "The numbers next to each filter (\"Red (12)\") are what make search slow.",
+          today: "11 database queries per search, one per filter: 3.6 of the 4.2 seconds.",
+          options: [["All at once", "One query, counted in memory. Fine up to about 50,000 products.", true], ["Cache them", "Keep one query per filter but reuse results for 5 minutes."], ["Leave as is", "Accept the 4 seconds."]],
+          details: "<p>Trace from <code>search-handler.ts:84</code>: 11 sequential queries, 3.6 s of the 4.2 s total.</p>" },
+        { id: "parser", short: "Filter code copies",
+          title: "Should the three copies of the filter code become one?",
+          meaning: "Each search page parses filters with its own copy, and the copies disagree on empty ranges.",
+          today: "3 copies; 2 of the last 5 search bugs came from them.",
+          options: [["Merge into one", "Keep the newest copy and point all 9 callers at it. <code class=\"ref\">search/utils.ts</code>", true], ["Leave as is", "Fix the empty-range bug in each copy instead."]],
+          details: "<p>The copies live in <code>search/utils.ts</code>, <code>export/filters.ts</code> and <code>admin/search.ts</code>. They differ only when the lower bound is above the upper bound. 14 tests cover the kept copy.</p>" },
+      ] },
+    { title: "How the change ships", blurb: "Rollout and what users notice.",
+      questions: [
+        { id: "rollout", short: "Rollout",
+          title: "Should the faster search reach everyone at once?",
+          meaning: "The counts may differ by one or two for products edited in the last minute.",
+          today: "0 searches use the new path; 1,200 searches a day run on the old one.",
+          options: [["Everyone at once", "One release, easy to roll back.", true], ["10% first for a week", "Slower, but shows count differences on real data."]] },
+      ] },
   ],
 }
 /* END REPLACE */
+
+const ICON_CHECK = '<svg class="svg" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+const ICON_CHEV = '<svg class="svg" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>'
+const ICON_LIST = '<svg class="svg" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>'
+const ICON_NOTE = '<svg class="svg" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>'
+const ICON_FILE = '<svg class="svg" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>'
 
 const storageKey = `briefing-${PAGE.store}`
 const state = (() => {
@@ -111,105 +222,100 @@ const save = () => {
   } catch {}
 }
 
-const questions = PAGE.questions.map((question) => ({ ...question, rec: question.options.find((option) => option[2] === true)?.[0] }))
+const questions = PAGE.groups.flatMap((group) => group.questions)
 const byId = new Map(questions.map((question) => [question.id, question]))
-const pickOf = (id) => state[id]?.pick
-const noteOf = (id) => (state[id]?.note ?? "").trim()
-const isAnswered = (question) => pickOf(question.id) != null || noteOf(question.id) !== ""
-const lastScreen = questions.length + 1
+const isAnswered = (question) => state[question.id]?.pick != null || (state[question.id]?.note ?? "").trim() !== ""
 const minutes = Math.max(1, Math.ceil(questions.length / 1.5))
+const themed = PAGE.groups.length > 1
 
-const introScreen = `<section data-screen="0">
-  <p class="eyebrow">Briefing</p>
-  <h1>${PAGE.title}</h1>
-  <p class="meaning">${PAGE.intro}</p>
-  <p class="meaning">${questions.length} questions, about ${minutes} minutes. Nothing is preselected; skip anything you have no opinion on.</p>
-  ${PAGE.asIs?.length ? `<details><summary>Already decided, no input needed (${PAGE.asIs.length})</summary><div class="details"><ul>${PAGE.asIs.map((line) => `<li>${line}</li>`).join("")}</ul></div></details>` : ""}
-</section>`
+const questionCard = (question) => {
+  const note = state[question.id]?.note ?? ""
+  return `<article class="q" id="q-${question.id}" data-id="${question.id}">
+    <div class="qhead"><div class="qnum">${ICON_CHECK}<span>${String(questions.indexOf(question) + 1).padStart(2, "0")}</span><span>·</span><span>${question.short}</span></div><h3>${question.title}</h3></div>
+    <p class="meaning">${question.meaning}</p>
+    ${question.today ? `<div class="cur"><b>Today</b><span>${question.today}</span></div>` : ""}
+    <div class="radios">${question.options.map(([label, consequence, recommended], index) => `<button type="button" class="opt" data-act="pick" data-id="${question.id}" data-index="${index}" aria-pressed="false">
+      <span class="radio"></span>
+      <span><span class="lbl">${label}</span>${consequence ? `<span class="desc">${consequence}</span>` : ""}</span>
+      ${recommended === true ? '<span class="rec">Recommended</span>' : "<span></span>"}
+    </button>`).join("")}</div>
+    <textarea class="qnote" data-note="${question.id}" placeholder="Note for Claude on ${question.short.toLowerCase()}"${note === "" ? " hidden" : ""}></textarea>
+    <div class="qfoot"><button type="button" data-act="note"${note === "" ? "" : " hidden"}>${ICON_NOTE}Add a note</button>${question.details ? `<button type="button" data-act="evidence" aria-expanded="false">${ICON_FILE}<span>Show evidence</span></button>` : ""}</div>
+    ${question.details ? `<div class="evidence" hidden>${question.details}</div>` : ""}
+  </article>`
+}
 
-const questionScreen = (question, index) => `<section data-screen="${index + 1}" hidden>
-  <p class="eyebrow">Question ${index + 1} of ${questions.length}</p>
-  <h2>${question.title}</h2>
-  <p class="meaning">${question.meaning}</p>
-  ${question.today ? `<p class="today"><b>Today</b><span>${question.today}</span></p>` : ""}
-  <div class="options">${question.options.map(([label, description], optionIndex) => `<button type="button" class="option" data-id="${question.id}" data-index="${optionIndex}"><span class="radio"></span><span><span class="label">${label}</span>${label === question.rec ? '<span class="rec">Recommended</span>' : ""}${description ? `<span class="d">${description}</span>` : ""}</span><span class="key">${optionIndex + 1}</span></button>`).join("")}</div>
-  ${question.details ? `<details><summary>Show details</summary><div class="details">${question.details}</div></details>` : ""}
-  <textarea data-note="${question.id}" placeholder="Add a note (optional)"></textarea>
-</section>`
+document.title = PAGE.title.replace(/<[^>]*>/g, "")
+document.getElementById("count").textContent = `${questions.length} question${questions.length === 1 ? "" : "s"}, about ${minutes} minute${minutes === 1 ? "" : "s"}`
+document.getElementById("toc").innerHTML = PAGE.groups.map((group) => `<div class="toc-g">${themed ? `<b>${group.title}</b>` : ""}${group.questions.map((question) => `<a href="#q-${question.id}" data-toc="${question.id}"><i></i>${question.short}</a>`).join("")}</div>`).join("")
+document.getElementById("page").innerHTML = `<header class="hero">
+    <div class="head"><span class="eyebrow">${PAGE.eyebrow}</span><h1>${PAGE.title}</h1></div>
+    <dl class="memo">
+      <div><dt>In short</dt><dd>${PAGE.tldr}</dd></div>
+      ${PAGE.why ? `<div><dt>Why it matters</dt><dd>${PAGE.why}</dd></div>` : ""}
+      <div><dt>What I need</dt><dd>${PAGE.need}</dd></div>
+      ${PAGE.after ? `<div><dt>After you send</dt><dd>${PAGE.after}</dd></div>` : ""}
+    </dl>
+    ${PAGE.asIs?.length ? `<details class="settled"><summary>${ICON_LIST}<span><b>${PAGE.asIs.length} point${PAGE.asIs.length === 1 ? " is" : "s are"} already settled.</b> No input needed.</span><span class="more">${ICON_CHEV}</span></summary><ul>${PAGE.asIs.map((line) => `<li>${ICON_CHECK}<span>${line}</span></li>`).join("")}</ul></details>` : ""}
+  </header>
+  ${PAGE.groups.map((group, groupIndex) => `<section class="group">
+    <div class="group-h">${themed ? `<span class="eyebrow">Theme ${groupIndex + 1} of ${PAGE.groups.length}</span>` : ""}<h2>${group.title}</h2>${group.blurb ? `<p>${group.blurb}</p>` : ""}</div>
+    <div class="qlist">${group.questions.map(questionCard).join("")}</div>
+  </section>`).join("")}
+  <section class="closing">
+    <h2>Anything else?</h2>
+    <p>Optional. Goes to Claude with your answers.</p>
+    <textarea class="qnote" data-note="general" placeholder="Anything the questions missed"></textarea>
+    <pre id="fallback" hidden></pre>
+  </section>`
 
-const endScreen = `<section data-screen="${lastScreen}" hidden>
-  <p class="eyebrow">Review</p>
-  <h2>Your answers</h2>
-  <div class="summary" id="summary"></div>
-  <textarea data-note="general" placeholder="Anything else? (optional)"></textarea>
-  <div class="actions"><button type="button" class="btn" id="send" hidden>Send to Claude</button><button type="button" class="btn" id="copy">Copy answers</button></div>
-  <p id="status"></p>
-</section>`
-
-document.title = PAGE.title
-document.getElementById("screens").innerHTML = introScreen + questions.map(questionScreen).join("") + endScreen
 document.querySelectorAll("textarea[data-note]").forEach((textarea) => {
   textarea.value = state[textarea.dataset.note]?.note ?? ""
 })
 
-const renderSummary = () => {
-  document.getElementById("summary").innerHTML = questions.map((question, index) => {
-    const pick = pickOf(question.id)
-    const note = noteOf(question.id)
-    const answer = pick ?? (note ? "Note only" : "Skipped")
-    return `<button type="button" class="row${isAnswered(question) ? "" : " skipped"}" data-goto="${index + 1}"><span class="q">${question.title}${note ? `<br><i>${note}</i>` : ""}</span><span class="a">${answer}</span></button>`
-  }).join("")
-}
-
-const renderPicks = () => {
-  document.querySelectorAll(".option").forEach((button) => {
-    const question = byId.get(button.dataset.id)
-    button.classList.toggle("on", pickOf(question.id) === question.options[Number(button.dataset.index)][0])
+const refresh = () => {
+  const done = questions.filter(isAnswered).length
+  document.getElementById("progress").textContent = `${done} of ${questions.length} answered`
+  document.getElementById("bar").style.width = `${(done / questions.length) * 100}%`
+  document.querySelectorAll(".q").forEach((card) => {
+    card.classList.toggle("answered", isAnswered(byId.get(card.dataset.id)))
+  })
+  document.querySelectorAll("[data-toc]").forEach((link) => {
+    link.classList.toggle("done", isAnswered(byId.get(link.dataset.toc)))
+  })
+  document.querySelectorAll(".opt").forEach((button) => {
+    const on = state[button.dataset.id]?.pick === byId.get(button.dataset.id).options[Number(button.dataset.index)][0]
+    button.classList.toggle("on", on)
+    button.setAttribute("aria-pressed", String(on))
   })
 }
-
-const backButton = document.getElementById("back")
-const nextButton = document.getElementById("next")
-const dots = document.getElementById("dots")
-let currentScreen = 0
-
-const renderDots = () => {
-  dots.innerHTML = questions.map((question, index) => `<button type="button" class="dot${index + 1 === currentScreen ? " here" : isAnswered(question) ? " done" : ""}" data-goto="${index + 1}" aria-label="Question ${index + 1}"></button>`).join("")
-}
-
-const show = (screen) => {
-  currentScreen = Math.min(Math.max(screen, 0), lastScreen)
-  document.querySelectorAll("[data-screen]").forEach((section) => {
-    section.hidden = Number(section.dataset.screen) !== currentScreen
-  })
-  if (currentScreen === lastScreen) renderSummary()
-  backButton.style.visibility = currentScreen === 0 ? "hidden" : "visible"
-  nextButton.style.visibility = currentScreen === lastScreen ? "hidden" : "visible"
-  nextButton.textContent = currentScreen === 0 ? "Start" : currentScreen === questions.length ? "Review" : "Next"
-  renderDots()
-  document.activeElement?.blur()
-  window.scrollTo(0, 0)
-}
-
-const choose = (id, index) => {
-  const label = byId.get(id).options[index][0]
-  state[id] = { ...state[id], pick: pickOf(id) === label ? undefined : label }
-  save()
-  renderPicks()
-  renderDots()
-}
-
-backButton.addEventListener("click", () => show(currentScreen - 1))
-nextButton.addEventListener("click", () => show(currentScreen + 1))
 
 document.addEventListener("click", (event) => {
-  const option = event.target.closest(".option")
-  if (option != null) {
-    choose(option.dataset.id, Number(option.dataset.index))
+  const target = event.target.closest("[data-act]")
+  if (target == null) return
+  const card = target.closest(".q")
+
+  if (target.dataset.act === "pick") {
+    const { id } = target.dataset
+    const label = byId.get(id).options[Number(target.dataset.index)][0]
+    state[id] = { ...state[id], pick: state[id]?.pick === label ? undefined : label }
+    save()
+    refresh()
     return
   }
-  const jump = event.target.closest("[data-goto]")
-  if (jump != null) show(Number(jump.dataset.goto))
+
+  if (target.dataset.act === "note") {
+    const textarea = card.querySelector(".qnote")
+    textarea.hidden = false
+    target.hidden = true
+    textarea.focus()
+    return
+  }
+
+  const evidence = card.querySelector(".evidence")
+  evidence.hidden = !evidence.hidden
+  target.setAttribute("aria-expanded", String(!evidence.hidden))
+  target.querySelector("span").textContent = evidence.hidden ? "Show evidence" : "Hide evidence"
 })
 
 document.addEventListener("input", (event) => {
@@ -217,52 +323,22 @@ document.addEventListener("input", (event) => {
   if (id == null) return
   state[id] = { ...state[id], note: event.target.value }
   save()
-  renderDots()
-})
-
-const moveChoice = (step) => {
-  const question = questions[currentScreen - 1]
-  if (question == null) return
-  const current = question.options.findIndex((option) => option[0] === pickOf(question.id))
-  const next = current === -1 ? (step > 0 ? 0 : question.options.length - 1) : (current + step + question.options.length) % question.options.length
-  state[question.id] = { ...state[question.id], pick: question.options[next][0] }
-  save()
-  renderPicks()
-  renderDots()
-}
-
-document.addEventListener("keydown", (event) => {
-  if (event.metaKey || event.ctrlKey || event.altKey) return
-  if (event.target.closest?.("textarea, input") != null) {
-    if (event.key === "Escape") event.target.blur()
-    return
-  }
-  if (event.target.closest?.("summary") != null && event.key === "Enter") return
-  const keys = {
-    ArrowRight: () => show(currentScreen + 1),
-    ArrowLeft: () => show(currentScreen - 1),
-    Enter: () => show(currentScreen + 1),
-    ArrowDown: () => moveChoice(1),
-    ArrowUp: () => moveChoice(-1),
-  }
-  const action = keys[event.key]
-  if (action != null) {
-    event.preventDefault()
-    action()
-    return
-  }
-  if (!/^[1-9]$/.test(event.key)) return
-  const question = questions[currentScreen - 1]
-  if (question == null || Number(event.key) > question.options.length) return
-  choose(question.id, Number(event.key) - 1)
+  refresh()
 })
 
 const answerText = () => {
-  const answered = questions.filter(isAnswered)
+  const lines = questions.filter(isAnswered).map((question) => {
+    const note = (state[question.id]?.note ?? "").trim().replace(/\s*\n\s*/g, " / ")
+    return `${question.id}: ${state[question.id]?.pick ?? "(no pick)"}${note ? ` | ${note}` : ""}`
+  })
+  const general = (state.general?.note ?? "").trim().replace(/\s*\n\s*/g, " / ")
   const skipped = questions.filter((question) => !isAnswered(question)).map((question) => question.id)
-  const lines = answered.map((question) => `${question.id}: ${pickOf(question.id) ?? "(no pick)"}${noteOf(question.id) ? ` | ${noteOf(question.id).replace(/\s*\n\s*/g, " / ")}` : ""}`)
-  const general = noteOf("general") ? [`general: ${noteOf("general").replace(/\s*\n\s*/g, " / ")}`] : []
-  return [PAGE.title, ...lines, ...general, ...(skipped.length > 0 ? [`skipped: ${skipped.join(", ")}`] : [])].join("\n")
+  return [
+    document.title,
+    ...lines,
+    ...(general ? [`general: ${general}`] : []),
+    ...(skipped.length > 0 ? [`skipped: ${skipped.join(", ")}`] : []),
+  ].join("\n")
 }
 
 const status = document.getElementById("status")
@@ -270,7 +346,7 @@ const sendButton = document.getElementById("send")
 const copyButton = document.getElementById("copy")
 const served = location.protocol !== "file:"
 sendButton.hidden = !served
-copyButton.classList.toggle("secondary", served)
+copyButton.classList.toggle("ghost", served)
 
 sendButton.addEventListener("click", async () => {
   sendButton.disabled = true
@@ -290,14 +366,15 @@ copyButton.addEventListener("click", async () => {
     await navigator.clipboard.writeText(text)
     status.textContent = "Copied. Paste it into the session."
   } catch {
-    status.textContent = "Clipboard blocked, select the text below."
-    document.getElementById("summary").insertAdjacentHTML("beforeend", "<pre></pre>")
-    document.querySelector("#summary > pre:last-child").textContent = text
+    status.textContent = "Clipboard blocked, select the text at the end of the page."
+    const fallback = document.getElementById("fallback")
+    fallback.textContent = text
+    fallback.hidden = false
+    fallback.scrollIntoView({ block: "center" })
   }
 })
 
-renderPicks()
-show(0)
+refresh()
 </script>
 </body>
 </html>
