@@ -17,6 +17,14 @@ These rules override the urge to fill every section.
 4. **The verdict is never skipped; the zoom-out reasoning only prints when it changes the plan.** If the shape is right, the verdict stands alone, with no endorsement.
 5. **File placement / naming counts only when it's actively wrong**: broken import resolution, or a deviation from the repo's established layout big enough to confuse maintainers (types in the feature folder while the repo dumps them in a legacy dir; a second stack stood up beside an existing one). It goes in `Fix before merge`.
 
+## Around the review
+
+- Comment only on lines the diff touches (check hunk ranges).
+- Quality fixes must preserve behaviour; a product change the PR itself makes is a question, not a fix.
+- Brief review subagents with a hard bar (must-fix or strong should-fix, structural only) and triage what they return; stop when what is left isn't worth a change, not when the list is empty.
+- Fixes made while reviewing a colleague's PR go on a local `review/<pr>-<slug>` branch off the PR head, uncommitted unless the user asks; never push.
+- After the user's review is posted, follow up only on the points they commented on; test a behavioural claim before stating it.
+
 ## Code quality — review like a lazy senior dev
 
 Agent-written code is routinely poor in structure, flow, and readability even when it's correct. Hold it to the bar in the user's global coding principles: **would a senior wave this through on first read?** If not, it's a finding — structure, flow, and readability are first-class here, not "just style".
