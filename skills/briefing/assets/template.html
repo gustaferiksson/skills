@@ -17,6 +17,7 @@
   :root { --bg: #14120f; --surface: #1c1915; --raised: #211e19; --ink: #f1ece2; --fg2: #d3cbbd; --mute: #a39a8a; --faint: #6b6355; --line: #2e2a23; --line2: #3e382f; --acc: #a9c0de; --acc-ink: #14120f; --acc-soft: #1f2731; --rec: #a9c0de; --rec-soft: #212a35; --track: #26221c }
 }
 * { box-sizing: border-box }
+html { scrollbar-width: thin; scrollbar-color: var(--line2) transparent }
 [hidden] { display: none !important }
 body { margin: 0; background: var(--bg); color: var(--ink); font: var(--fs)/var(--lh) var(--sans); -webkit-font-smoothing: antialiased }
 :where(button) { all: unset; box-sizing: border-box; cursor: pointer }
@@ -34,16 +35,17 @@ h3 { font-size: var(--h3); line-height: 1.32; letter-spacing: -.005em; font-weig
 .shell { max-width: 1120px; margin: 0 auto; padding: var(--top) 24px 0; display: grid; grid-template-columns: 272px minmax(0, 720px); gap: 64px; justify-content: center }
 main { min-width: 0 }
 
-.side { position: sticky; top: var(--top); align-self: start; display: grid; gap: 22px; max-height: calc(100vh - var(--top) - 24px); overflow: auto }
+.side { position: sticky; top: var(--top); align-self: start; display: grid; gap: 16px; max-height: calc(100vh - var(--top) - 24px); overflow: auto; scrollbar-width: thin }
+.side:not(:hover) { scrollbar-color: transparent transparent }
 .side .title { display: grid; gap: 4px }
 .side .title span:last-child { font-size: 13.5px; color: var(--mute) }
 .prog { display: grid; gap: 8px; font-size: 13.5px; color: var(--fg2); font-variant-numeric: tabular-nums }
 .bar { height: 4px; border-radius: 2px; background: var(--track); overflow: hidden }
 .bar i { display: block; width: 0; height: 100%; background: var(--acc); border-radius: 2px; transition: width .2s }
-.toc { display: grid; gap: 14px }
+.toc { display: grid; gap: 10px }
 .toc-g { display: grid; gap: 2px }
 .toc-g > b { font-size: 11px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); padding: 0 8px 6px }
-.toc a { display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: center; padding: 5px 8px; border-radius: 7px; font-size: 13.5px; line-height: 1.4; color: var(--fg2); text-decoration: none }
+.toc a { display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: center; padding: 4px 8px; border-radius: 7px; font-size: 13.5px; line-height: 1.4; color: var(--fg2); text-decoration: none }
 .toc a:hover { background: var(--track) }
 .toc a i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--line2) }
 .toc a.done { color: var(--ink) }
@@ -115,7 +117,7 @@ code.ref { display: table; margin-top: 8px; padding: 2px 7px; border-radius: 6px
 .qfoot button { display: inline-flex; gap: 6px; align-items: center; color: var(--mute) }
 .qfoot button:hover { color: var(--ink) }
 .qfoot .svg { width: 15px; height: 15px }
-.qnote { width: 100%; min-height: 64px; padding: 10px 12px; border: 1px solid var(--line2); border-radius: 10px; background: var(--surface); color: var(--ink); font: 14.5px/1.5 var(--sans); resize: vertical }
+.qnote { width: 100%; min-height: 64px; padding: 10px 12px; border: 1px solid var(--line2); border-radius: 10px; background: var(--surface); color: var(--ink); font: 14.5px/1.5 var(--sans); resize: none; field-sizing: content }
 .qnote:focus { outline: none; border-color: var(--acc); box-shadow: 0 0 0 3px var(--acc-soft) }
 .qnote::placeholder { color: var(--faint) }
 .evidence { display: grid; gap: 10px; padding: 16px 18px; border-radius: 12px; background: var(--raised); border: 1px solid var(--line); font-size: 14.5px; line-height: 1.55; color: var(--fg2); overflow-wrap: anywhere }
@@ -269,8 +271,15 @@ document.getElementById("page").innerHTML = `<header class="hero">
     <pre id="fallback" hidden></pre>
   </section>`
 
+const fitNote = (textarea) => {
+  if (CSS.supports("field-sizing", "content")) return
+  textarea.style.height = "auto"
+  textarea.style.height = `${textarea.scrollHeight + 2}px`
+}
+
 document.querySelectorAll("textarea[data-note]").forEach((textarea) => {
   textarea.value = state[textarea.dataset.note]?.note ?? ""
+  fitNote(textarea)
 })
 
 const refresh = () => {
@@ -321,6 +330,7 @@ document.addEventListener("click", (event) => {
 document.addEventListener("input", (event) => {
   const id = event.target.dataset.note
   if (id == null) return
+  fitNote(event.target)
   state[id] = { ...state[id], note: event.target.value }
   save()
   refresh()
