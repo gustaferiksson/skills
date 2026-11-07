@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Briefing</title>
+<style>
+:root{--bg:#f4f3f0;--card:#fff;--ink:#1a1917;--soft:#44403c;--mute:#78716c;--faint:#b5b0aa;--line:#e7e4df;--acc:#2f5bea;--acc-soft:#eef2fe;--ok:#167a3e;--ok-soft:#e8f6ee;--shadow:0 1px 2px rgba(28,25,23,.04),0 8px 24px rgba(28,25,23,.06)}
+@media (prefers-color-scheme:dark){:root{--bg:#0e0d0c;--card:#181614;--ink:#f3f1ee;--soft:#d6d3d1;--mute:#a8a29e;--faint:#57534e;--line:#2a2724;--acc:#7c9cff;--acc-soft:#1a2340;--ok:#5ad08a;--ok-soft:#10261a;--shadow:none}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:660px;margin:0 auto;padding:56px 20px 140px}
+[hidden]{display:none !important}
+section{animation:in .18s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:0 0 10px}
+h1{font-size:32px;line-height:1.2;letter-spacing:-.01em;margin:0 0 14px}
+h2{font-size:26px;line-height:1.25;letter-spacing:-.01em;margin:0 0 14px}
+.meaning{color:var(--soft);margin:0 0 14px}
+.today{display:flex;gap:10px;align-items:baseline;margin:0 0 26px;padding:12px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line);font-size:15.5px;color:var(--soft)}
+.today b{flex:none;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.options{display:flex;flex-direction:column;gap:10px;margin:0 0 18px}
+.option{all:unset;box-sizing:border-box;display:grid;grid-template-columns:22px 1fr auto;gap:14px;align-items:start;padding:16px 18px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow);cursor:pointer;transition:border-color .12s,background .12s}
+.option:hover{border-color:var(--faint)}
+.option:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+.option .radio{width:20px;height:20px;margin-top:3px;border-radius:50%;border:1.5px solid var(--faint);display:grid;place-items:center}
+.option.on{border-color:var(--acc);background:var(--acc-soft)}
+.option.on .radio{border-color:var(--acc);background:var(--acc)}
+.option.on .radio:after{content:"";width:8px;height:8px;border-radius:50%;background:var(--card)}
+.option .label{font-weight:600}
+.option .d{display:block;color:var(--mute);font-size:15px;margin-top:3px}
+.option .key{font:600 12px ui-monospace,Menlo,monospace;color:var(--faint);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-top:3px}
+.rec{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ok);background:var(--ok-soft);border-radius:99px;padding:2px 8px;margin-left:8px;vertical-align:2px}
+details{margin:0 0 16px}
+summary{cursor:pointer;color:var(--acc);font-size:15px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary:before{content:"+ "}
+details[open] summary:before{content:"− "}
+.details{margin-top:10px;padding:14px 16px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:15px;color:var(--soft)}
+.details b,.details i{color:var(--ink)}
+.details p:first-child{margin-top:0}.details p:last-child{margin-bottom:0}
+textarea{width:100%;min-height:48px;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;font-size:15px;line-height:1.45;resize:vertical}
+textarea:focus{outline:none;border-color:var(--acc)}
+code{font:13.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg);border:1px solid var(--line);padding:0 5px;border-radius:5px;overflow-wrap:anywhere}
+pre{white-space:pre-wrap;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:13px}
+ul{padding-left:20px}li{margin:5px 0}
+a{color:var(--acc)}
+.summary{display:flex;flex-direction:column;gap:8px;margin:0 0 18px}
+.row{all:unset;box-sizing:border-box;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer}
+.row:hover{border-color:var(--faint)}
+.row .q{font-size:15px;color:var(--soft)}
+.row .a{font-size:14px;font-weight:600;text-align:right}
+.row.skipped .a{color:var(--faint);font-weight:500}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
+.btn{border:0;border-radius:11px;padding:11px 20px;font:inherit;font-size:15.5px;font-weight:600;cursor:pointer;background:var(--acc);color:#fff}
+.btn.secondary{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:default}
+#status{color:var(--mute);font-size:15px;margin:14px 0 0}
+.nav{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+.nav-in{max-width:660px;margin:0 auto;padding:12px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center}
+.dots{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
+.dot{all:unset;cursor:pointer;width:22px;height:6px;border-radius:3px;background:var(--line)}
+.dot.done{background:var(--faint)}
+.dot.here{background:var(--acc)}
+.hint{text-align:center;font-size:12px;color:var(--faint);margin-top:6px}
+kbd{font:600 11px ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:4px;padding:0 4px}
+@media (max-width:600px){main{padding-top:32px}h1{font-size:27px}h2{font-size:22px}.option .key,.hint{display:none}.option{grid-template-columns:22px 1fr}}
+@media (prefers-reduced-motion:reduce){section{animation:none}}
+</style>
+</head>
+<body>
+<main id="screens"></main>
+<div class="nav"><div class="nav-in"><button type="button" class="btn secondary" id="back">Back</button><div><div class="dots" id="dots"></div><div class="hint"><kbd>←</kbd> <kbd>→</kbd> move · <kbd>↑</kbd> <kbd>↓</kbd> or <kbd>1</kbd>–<kbd>9</kbd> choose · <kbd>Enter</kbd> next</div></div><button type="button" class="btn" id="next">Next</button></div></div>
+
+<script>
+/* REPLACE: PAGE */
+const PAGE = {
+  title: "Speeding up search",
+  store: "search-speed-r1",
+  intro: "Search takes over 4 seconds for most users. I found three changes that would bring it under 1 second; a few of them need your call first.",
+  asIs: [
+    "Add an index on <code>products.updated_at</code> (no behaviour change).",
+    "Delete the unused <code>legacySearch</code> export (0 callers).",
+  ],
+  questions: [
+    { id: "parser", title: "Should the three copies of the filter code become one?",
+      meaning: "Each search page parses filters with its own copy, and the copies disagree on empty ranges.",
+      today: "3 copies, 2 of the last 5 search bugs came from them.",
+      options: [["Merge into one", "Keep the newest copy and point all 9 callers at it.", true], ["Leave as is", "Fix the empty-range bug in each copy instead."]],
+      details: "<p>The copies live in <code>search/utils.ts</code>, <code>export/filters.ts</code> and <code>admin/search.ts</code>. They differ only when the lower bound is above the upper bound. 14 existing tests cover the kept copy.</p>" },
+    { id: "facets", title: "How should the filter counts be calculated?",
+      meaning: "The numbers next to each filter (\"Red (12)\") are what make search slow.",
+      today: "11 database queries per search, one per filter.",
+      options: [["All at once", "One query, counted in memory. Fine up to about 50,000 products.", true], ["Cache them", "Keep one query per filter but reuse results for 5 minutes."], ["Leave as is", "Accept the 4 seconds."]],
+      details: "<p>Trace from <code>search-handler.ts:84</code>: 11 sequential queries, 3.6 s of the 4.2 s total.</p>" },
+  ],
+}
+/* END REPLACE */
+
+const storageKey = `briefing-${PAGE.store}`
+const state = (() => {
+  try {
+    return JSON.parse(localStorage.getItem(storageKey)) ?? {}
+  } catch {
+    return {}
+  }
+})()
+const save = () => {
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(state))
+  } catch {}
+}
+
+const questions = PAGE.questions.map((question) => ({ ...question, rec: question.options.find((option) => option[2] === true)?.[0] }))
+const byId = new Map(questions.map((question) => [question.id, question]))
+const pickOf = (id) => state[id]?.pick
+const noteOf = (id) => (state[id]?.note ?? "").trim()
+const isAnswered = (question) => pickOf(question.id) != null || noteOf(question.id) !== ""
+const lastScreen = questions.length + 1
+const minutes = Math.max(1, Math.ceil(questions.length / 1.5))
+
+const introScreen = `<section data-screen="0">
+  <p class="eyebrow">Briefing</p>
+  <h1>${PAGE.title}</h1>
+  <p class="meaning">${PAGE.intro}</p>
+  <p class="meaning">${questions.length} questions, about ${minutes} minutes. Nothing is preselected; skip anything you have no opinion on.</p>
+  ${PAGE.asIs?.length ? `<details><summary>Already decided, no input needed (${PAGE.asIs.length})</summary><div class="details"><ul>${PAGE.asIs.map((line) => `<li>${line}</li>`).join("")}</ul></div></details>` : ""}
+</section>`
+
+const questionScreen = (question, index) => `<section data-screen="${index + 1}" hidden>
+  <p class="eyebrow">Question ${index + 1} of ${questions.length}</p>
+  <h2>${question.title}</h2>
+  <p class="meaning">${question.meaning}</p>
+  ${question.today ? `<p class="today"><b>Today</b><span>${question.today}</span></p>` : ""}
+  <div class="options">${question.options.map(([label, description], optionIndex) => `<button type="button" class="option" data-id="${question.id}" data-index="${optionIndex}"><span class="radio"></span><span><span class="label">${label}</span>${label === question.rec ? '<span class="rec">Recommended</span>' : ""}${description ? `<span class="d">${description}</span>` : ""}</span><span class="key">${optionIndex + 1}</span></button>`).join("")}</div>
+  ${question.details ? `<details><summary>Show details</summary><div class="details">${question.details}</div></details>` : ""}
+  <textarea data-note="${question.id}" placeholder="Add a note (optional)"></textarea>
+</section>`
+
+const endScreen = `<section data-screen="${lastScreen}" hidden>
+  <p class="eyebrow">Review</p>
+  <h2>Your answers</h2>
+  <div class="summary" id="summary"></div>
+  <textarea data-note="general" placeholder="Anything else? (optional)"></textarea>
+  <div class="actions"><button type="button" class="btn" id="send" hidden>Send to Claude</button><button type="button" class="btn" id="copy">Copy answers</button></div>
+  <p id="status"></p>
+</section>`
+
+document.title = PAGE.title
+document.getElementById("screens").innerHTML = introScreen + questions.map(questionScreen).join("") + endScreen
+document.querySelectorAll("textarea[data-note]").forEach((textarea) => {
+  textarea.value = state[textarea.dataset.note]?.note ?? ""
+})
+
+const renderSummary = () => {
+  document.getElementById("summary").innerHTML = questions.map((question, index) => {
+    const pick = pickOf(question.id)
+    const note = noteOf(question.id)
+    const answer = pick ?? (note ? "Note only" : "Skipped")
+    return `<button type="button" class="row${isAnswered(question) ? "" : " skipped"}" data-goto="${index + 1}"><span class="q">${question.title}${note ? `<br><i>${note}</i>` : ""}</span><span class="a">${answer}</span></button>`
+  }).join("")
+}
+
+const renderPicks = () => {
+  document.querySelectorAll(".option").forEach((button) => {
+    const question = byId.get(button.dataset.id)
+    button.classList.toggle("on", pickOf(question.id) === question.options[Number(button.dataset.index)][0])
+  })
+}
+
+const backButton = document.getElementById("back")
+const nextButton = document.getElementById("next")
+const dots = document.getElementById("dots")
+let currentScreen = 0
+
+const renderDots = () => {
+  dots.innerHTML = questions.map((question, index) => `<button type="button" class="dot${index + 1 === currentScreen ? " here" : isAnswered(question) ? " done" : ""}" data-goto="${index + 1}" aria-label="Question ${index + 1}"></button>`).join("")
+}
+
+const show = (screen) => {
+  currentScreen = Math.min(Math.max(screen, 0), lastScreen)
+  document.querySelectorAll("[data-screen]").forEach((section) => {
+    section.hidden = Number(section.dataset.screen) !== currentScreen
+  })
+  if (currentScreen === lastScreen) renderSummary()
+  backButton.style.visibility = currentScreen === 0 ? "hidden" : "visible"
+  nextButton.style.visibility = currentScreen === lastScreen ? "hidden" : "visible"
+  nextButton.textContent = currentScreen === 0 ? "Start" : currentScreen === questions.length ? "Review" : "Next"
+  renderDots()
+  document.activeElement?.blur()
+  window.scrollTo(0, 0)
+}
+
+const choose = (id, index) => {
+  const label = byId.get(id).options[index][0]
+  state[id] = { ...state[id], pick: pickOf(id) === label ? undefined : label }
+  save()
+  renderPicks()
+  renderDots()
+}
+
+backButton.addEventListener("click", () => show(currentScreen - 1))
+nextButton.addEventListener("click", () => show(currentScreen + 1))
+
+document.addEventListener("click", (event) => {
+  const option = event.target.closest(".option")
+  if (option != null) {
+    choose(option.dataset.id, Number(option.dataset.index))
+    return
+  }
+  const jump = event.target.closest("[data-goto]")
+  if (jump != null) show(Number(jump.dataset.goto))
+})
+
+document.addEventListener("input", (event) => {
+  const id = event.target.dataset.note
+  if (id == null) return
+  state[id] = { ...state[id], note: event.target.value }
+  save()
+  renderDots()
+})
+
+const moveChoice = (step) => {
+  const question = questions[currentScreen - 1]
+  if (question == null) return
+  const current = question.options.findIndex((option) => option[0] === pickOf(question.id))
+  const next = current === -1 ? (step > 0 ? 0 : question.options.length - 1) : (current + step + question.options.length) % question.options.length
+  state[question.id] = { ...state[question.id], pick: question.options[next][0] }
+  save()
+  renderPicks()
+  renderDots()
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.metaKey || event.ctrlKey || event.altKey) return
+  if (event.target.closest?.("textarea, input") != null) {
+    if (event.key === "Escape") event.target.blur()
+    return
+  }
+  if (event.target.closest?.("summary") != null && event.key === "Enter") return
+  const keys = {
+    ArrowRight: () => show(currentScreen + 1),
+    ArrowLeft: () => show(currentScreen - 1),
+    Enter: () => show(currentScreen + 1),
+    ArrowDown: () => moveChoice(1),
+    ArrowUp: () => moveChoice(-1),
+  }
+  const action = keys[event.key]
+  if (action != null) {
+    event.preventDefault()
+    action()
+    return
+  }
+  if (!/^[1-9]$/.test(event.key)) return
+  const question = questions[currentScreen - 1]
+  if (question == null || Number(event.key) > question.options.length) return
+  choose(question.id, Number(event.key) - 1)
+})
+
+const answerText = () => {
+  const answered = questions.filter(isAnswered)
+  const skipped = questions.filter((question) => !isAnswered(question)).map((question) => question.id)
+  const lines = answered.map((question) => `${question.id}: ${pickOf(question.id) ?? "(no pick)"}${noteOf(question.id) ? ` | ${noteOf(question.id).replace(/\s*\n\s*/g, " / ")}` : ""}`)
+  const general = noteOf("general") ? [`general: ${noteOf("general").replace(/\s*\n\s*/g, " / ")}`] : []
+  return [PAGE.title, ...lines, ...general, ...(skipped.length > 0 ? [`skipped: ${skipped.join(", ")}`] : [])].join("\n")
+}
+
+const status = document.getElementById("status")
+const sendButton = document.getElementById("send")
+const copyButton = document.getElementById("copy")
+const served = location.protocol !== "file:"
+sendButton.hidden = !served
+copyButton.classList.toggle("secondary", served)
+
+sendButton.addEventListener("click", async () => {
+  sendButton.disabled = true
+  status.textContent = "Sending"
+  const response = await fetch("submit", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: answerText() }) }).catch(() => null)
+  if (response?.ok) {
+    status.textContent = "Sent to Claude, you can close this tab."
+    return
+  }
+  sendButton.disabled = false
+  status.textContent = "Claude is no longer listening. Copy the answers and paste them into the session."
+})
+
+copyButton.addEventListener("click", async () => {
+  const text = answerText()
+  try {
+    await navigator.clipboard.writeText(text)
+    status.textContent = "Copied. Paste it into the session."
+  } catch {
+    status.textContent = "Clipboard blocked, select the text below."
+    document.getElementById("summary").insertAdjacentHTML("beforeend", "<pre></pre>")
+    document.querySelector("#summary > pre:last-child").textContent = text
+  }
+})
+
+renderPicks()
+show(0)
+</script>
+</body>
+</html>

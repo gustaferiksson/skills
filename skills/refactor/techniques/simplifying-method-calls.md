@@ -14,7 +14,7 @@ Full category page: [refactoring.guru/refactoring/techniques/simplifying-method-
 - **Introduce Parameter Object** — a group of parameters always travels together; pack them into an object. The fix for *Data Clumps* in signatures.
 - **Preserve Whole Object** — caller extracts several fields of an object to pass them in; pass the whole object instead.
 - **Remove Setting Method** — field shouldn't change after construction; remove the setter so callers can't violate the invariant.
-- **Replace Parameter with Explicit Methods** — boolean/enum parameter selects between fundamentally different behaviors; split into separate methods (`renderSync()` / `renderAsync()` not `render(async: boolean)`). Same as `ts-patterns` rule 4.
+- **Replace Parameter with Explicit Methods** — boolean/enum parameter selects between fundamentally different behaviors; split into separate methods (`renderSync()` / `renderAsync()` not `render(async: boolean)`).
 - **Replace Parameter with Method Call** — caller computes a value just to pass it in; let the callee compute it instead.
 - **Hide Method** — method is only used internally; reduce its visibility.
 - **Replace Constructor with Factory Method** — constructor does logic, or needs to return different subtypes; expose a static factory method.

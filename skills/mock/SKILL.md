@@ -9,7 +9,7 @@ One self-contained HTML file the user opens locally, flips settings in, and answ
 
 ## Rules
 
-- One `.html` file in the scratchpad or temp dir. Never commit it to the project, never publish it to a hosted artifact service, never drive the user's browser with automation tools. Open it with `open <file>`.
+- One `.html` file in the scratchpad or temp dir. Never commit it to the project, never publish it to a hosted artifact service, never drive the user's browser with automation tools. Serve it for the round trip (below), or open it with `open <file>`.
 - Plain HTML, CSS and JS, no framework, no build. But the preview must look like the real app: read the project's components, tokens, fonts, radii and icon set first and copy them into the preview styles. If the project uses a CDN icon set, load it with the CSS-mask `ic()` pattern in the template.
 - Realistic labels and data shapes taken from the real product, never lorem ipsum.
 - UI text has no `:` or ` - ` separators and no help text clutter. Descriptions go in tooltips.
@@ -30,7 +30,7 @@ What the chrome already does, so do not rebuild it:
 
 - Floating, minimisable settings panel. Per row: lock (`!` in the code, row collapses to its value, "Hide locked" hides it), alternatives request (`?`), note popover (copied as `key: note`, shown as the icon tooltip). One auto-growing general note, copied as `general: ...`.
 - Separate "Preview data" panel for preview-only toggles, never part of the code.
-- Copy button puts the code line plus note lines on the clipboard and shows "Copied".
+- Copy button puts the code line plus note lines on the clipboard and shows "Copied". When served, a Send to Claude button posts the same text.
 - Storage: locks persist across rounds, choices, notes and `?` requests are keyed by `ROUND`. Notes are never cleared on copy, only by "Clear notes".
 - Viewport pill (Small, Medium, Full width; pixel widths in tooltips) that zooms the preview to fit.
 
@@ -48,8 +48,8 @@ What the chrome already does, so do not rebuild it:
 
 ## Round loop
 
-1. Write the file, verify it (below), `open` it, and tell the user it is ready. Keep the reply short.
-2. The user pastes something like:
+1. Write the file, verify it (below), and show it. Run `node <this skill's dir>/scripts/serve.mjs <file> --timeout 2h` with the Bash tool and `run_in_background: true` from the main session (a subagent's background command dies with it), tell the user it is ready, and end the turn. It serves the file on 127.0.0.1 under a random token and opens the browser; their **Send to Claude** prints the code between `=== ANSWERS BEGIN ===` and `=== ANSWERS END ===` and exits 0, which re-invokes you (if the notification shows only the task id, read the task output). Exit 2 means it timed out. Each run takes one submit, so earlier tabs go stale. In `-p` or cloud sessions, or without Node, `open <file>` instead and the user pastes. Keep the reply short.
+2. The code arrives (sent or pasted) like:
    ```
    hdr=flat! flt=chips? st=badge dens=compact act=menu
    act: icons feel too small
@@ -62,7 +62,7 @@ What the chrome already does, so do not rebuild it:
    - Notes: apply the tweak, or turn a real choice into new values.
    - Values the user moved away from without comment can be narrowed or dropped.
    - Bump `ROUND` (`r1` to `r2`) so notes and requests start empty.
-4. Verify and reopen.
+4. Verify, then serve again (same file path, so locks and notes survive; the previous tab goes stale) or reopen.
 
 ## Verify every round
 

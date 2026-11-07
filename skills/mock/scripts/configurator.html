@@ -130,7 +130,7 @@ textarea:focus-visible { outline: 2px solid var(--c-ink); outline-offset: -1px }
 <body>
 <div class="bar">
   <b id="title"></b>
-  <div class="code"><input id="code" readonly aria-label="Code"><button type="button" class="btn-ink" id="copy">Copy code</button></div>
+  <div class="code"><input id="code" readonly aria-label="Code"><button type="button" class="btn-ink" id="send" hidden>Send to Claude</button><button type="button" class="btn-ink" id="copy">Copy code</button></div>
 </div>
 <div class="pop right" id="setpop"><div class="pop-h"><b>Settings</b><span><button type="button" class="ghost" id="clearnotes" title="Clear every note of this round, including the general one">Clear notes</button><button type="button" class="ghost" id="hidelocked">Hide locked</button><button type="button" class="min" aria-label="Minimise">–</button></span></div><form class="pop-b" id="controls"></form></div>
 <div class="pop left" id="pvpop"><div class="pop-h"><b>Preview data</b><button type="button" class="min" aria-label="Minimise">–</button></div><div class="pop-b"><form id="pvform" class="pop-b" style="padding:0"></form><p class="hint">Only changes the preview, never the code.</p></div></div>
@@ -353,6 +353,16 @@ copyButton.addEventListener("click", () => {
     scratch.remove()
     copied()
   })
+})
+
+const sendButton = document.getElementById("send")
+sendButton.hidden = location.protocol === "file:"
+sendButton.addEventListener("click", async () => {
+  sendButton.disabled = true
+  const text = [codeInput.dataset.code, ...noteLines()].join("\n")
+  const response = await fetch("submit", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) }).catch(() => null)
+  sendButton.textContent = response?.ok ? "Sent, close this tab" : "Not listening, copy instead"
+  sendButton.disabled = response?.ok === true
 })
 render()
 </script>

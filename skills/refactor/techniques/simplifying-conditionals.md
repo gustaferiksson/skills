@@ -11,6 +11,6 @@ Full category page: [refactoring.guru/refactoring/techniques/simplifying-conditi
 - **Decompose Conditional** — long boolean test in an `if`; extract the condition and each branch into named functions. Improves readability when the test itself is the puzzle.
 - **Replace Conditional with Polymorphism** — `if`/`switch` dispatches behavior by type; move each branch onto its own subclass or strategy. The fix for *Switch Statements* when the same switch appears in many places.
 - **Remove Control Flag** — flag variable governs loop or branch progression; use `break`, `return`, or restructure.
-- **Replace Nested Conditional with Guard Clauses** — pyramid of `if`s; early-return the unhappy paths so the happy path is flat. (See also `ts-patterns` rule 6.)
+- **Replace Nested Conditional with Guard Clauses** — pyramid of `if`s; early-return the unhappy paths so the happy path is flat.
 - **Introduce Null Object** — `if (x === null)` checks scattered across the code; replace `null` with a typed object whose methods are no-ops or sane defaults.
 - **Introduce Assertion** — an implicit precondition (e.g. "this function assumes the user is logged in") becomes an explicit runtime check.
