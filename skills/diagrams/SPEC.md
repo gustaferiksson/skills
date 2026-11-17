@@ -4,9 +4,9 @@ Shows a proposed design in a spec or PR: the parts, what each one does in a phra
 
 ## Layout
 
-- **Title and subtitle** top left: the title names the design (fontSize 21, bold), and the subtitle is the one sentence the reader must not miss, usually the key invariant ("The table stays the master copy...").
+- **Title and subtitle** top left: the title names the design (fontSize 21, bold), and the subtitle is the one sentence the reader must not miss, usually the key invariant ("Prices are only written in one place...").
 - **Legend** top right, in the highlight colour, saying what the colour means.
-- **Lanes** are the stages the data or request passes through, left to right: for example INGEST, MASTER DATA, INDEX, CONSUME. Use 3 to 5 lanes, each 320 wide, with 50 between them so edge labels sit in the gap. Lane colours: the source of truth `fillColor=#F6FBF0;strokeColor=#7AA116`, the lane the change is about `fillColor=#F6F7FF;strokeColor=#3334B9`, the rest `fillColor=#FAFAFA;strokeColor=#B0BEC5`. Five lanes are wider than 1400px, so review them in halves with `render --region`.
+- **Lanes** are the stages the data or request passes through, left to right: for example IMPORT, STORE, SEARCH, SERVE. Use 3 to 5 lanes, each 320 wide, with 50 between them so edge labels sit in the gap. Lane colours: the source of truth `fillColor=#F6FBF0;strokeColor=#7AA116`, the lane the change is about `fillColor=#F6F7FF;strokeColor=#3334B9`, the rest `fillColor=#FAFAFA;strokeColor=#B0BEC5`. Five lanes are wider than 1400px, so review them in halves with `render --region`.
 - **Cards** (280x62) inside the lanes, with 58 between them vertically, in the order the flow reaches them. Start each lane's cards at the top and end the lanes about 40 below the lowest card; leave a slot empty only when that keeps an edge straight.
 
 ## Cards

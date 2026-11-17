@@ -7,7 +7,7 @@ Everything that is neither an AWS wiring diagram nor a spec. Same palette and ru
 For explaining a whole system to someone new: which parts exist and how they relate, not how they are deployed.
 
 - Group boxes by domain or responsibility (`rounded=0;fillColor=none;strokeColor=#232F3E`), each with a bold title in its top-left corner (`verticalAlign=top;align=left;spacingLeft=12;spacingTop=8;fontStyle=1`).
-- Inside each group, a few icons (40x40) with short captions saying what they do ("Forecasting", "Settings API"), not resource names.
+- Inside each group, a few icons (40x40) with short captions saying what they do ("Search", "Billing"), not resource names.
 - Connect groups rather than every component; double-headed arrows for two-way traffic between groups.
 - External actors (users, clients, incoming files) at the left or right edge.
 - No AWS Cloud frame, no stack borders.
