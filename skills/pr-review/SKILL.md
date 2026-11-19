@@ -51,6 +51,8 @@ Flag:
 
 Bucketing: quality issues that shelter a bug (a mega-function hiding one, mutation causing a race) or a structural finding a senior would bounce go in `Fix before merge`; the rest go in `Worth fixing` or `Nits` by impact. Quality findings share the buckets with bugs; there is no separate quality section.
 
+**Seams with other skills.** This bar is the always-on baseline. When a finding needs a *named* fix, reach for `/refactor` (Fowler smell + technique catalog). Point at that catalog, don't restate it.
+
 **Conventions.** If the repo has a `CONVENTIONS.md` / `CLAUDE.md`, check against it. Don't go spelunking through unrelated files to reverse-engineer an unwritten house standard — judge against what's written down and what's visible in the diff and its immediate surroundings. Surface only material deviations.
 
 ## Other review dimensions
