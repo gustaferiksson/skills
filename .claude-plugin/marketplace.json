@@ -3,12 +3,12 @@
   "owner": {
     "name": "Gustaf Eriksson"
   },
-  "description": "Gustaf Eriksson's agent skills, as one installable plugin.",
+  "description": "Gustaf's agent skills.",
   "plugins": [
     {
       "name": "gustaf",
       "source": "./",
-      "description": "Agent skills for everyday engineering work."
+      "description": "Gustaf's agent skills."
     }
   ]
 }
