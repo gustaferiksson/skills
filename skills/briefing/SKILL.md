@@ -27,7 +27,7 @@ The user has little spare attention. Every rule below exists to save it.
 
 ## Build
 
-Copy [assets/template.html](assets/template.html) and replace only the `PAGE` object between the `REPLACE` markers. The template does the layout, progress, sidebar links, localStorage drafts, light and dark theme, and the answer text. Clicking a picked option unpicks it. Selecting any text in the memo, evidence or cards offers **Add note** (or ⌥N): the passage stays highlighted, click it to edit or delete, and the notes are listed above "Anything else?".
+Copy [assets/template.html](assets/template.html) and replace only the `PAGE` object between the `REPLACE` markers. The template does the layout, progress, sidebar links, localStorage drafts, light and dark theme, and the answer text. Clicking a picked option unpicks it. Selecting any text, headings included, offers **Add note** (or ⌥N): the passage stays highlighted, click it to edit or delete. Images and visual blocks (`img`, `svg`, `figure`, `canvas`, anything with `class="mock"`; give icon SVGs `class="svg"` to exclude them) show **Add note** on hover or keyboard focus; the block gets an outline ring with a badge to edit or delete. Notes are listed above "Anything else?".
 
 ```js
 const PAGE = {
@@ -89,7 +89,7 @@ skipped: rollout
 === ANSWERS END ===
 ```
 
-- Notes on highlighted text come back as `note: "<quoted passage, trimmed to 80 characters>" → <note>` lines after the question lines; they are comments on that passage, not answers, and need no pick.
+- Notes on highlighted text come back as `note: "<quoted passage, trimmed to 80 characters>" → <note>` lines after the question lines, and notes on an image or visual block as `note: [image: <alt, caption, nearest heading or figure N>] → <note>`; they are comments on that passage or visual, not answers, and need no pick.
 - If the notification shows only the task id, read the task's output file.
 - Exit 2: timeout without answers. Exit 64 or 66: bad arguments or missing file.
 - The port comes from the file path, so re-serving the same file keeps drafts. Each run accepts one submit and has a new token: earlier tabs go stale (Send fails, Copy still works). `--no-open` skips opening a tab, for tests or when you hand over the printed URL.
