@@ -147,6 +147,10 @@ mark.hl:hover { background: color-mix(in srgb, var(--acc) 24%, transparent) }
 .hl-btns { display: flex; gap: 6px }
 .hl-del { color: var(--mute); font-size: 13.5px; padding: 0 8px; align-self: center }
 .hl-del:hover { color: var(--ink) }
+.vis-noted { outline: 2px solid var(--acc); outline-offset: 3px; border-radius: 6px }
+[data-note-id]:focus-visible { outline: 2px dashed var(--acc); outline-offset: 3px }
+.vis-badge { position: absolute; z-index: 15; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--acc); color: var(--acc-ink); box-shadow: 0 2px 8px rgb(0 0 0 / .25) }
+.vis-badge:hover { filter: brightness(1.1) }
 .notes-block { display: grid; gap: 10px }
 .notes-block h2 { font-size: calc(var(--h2) * .85) }
 .notes-list { list-style: none; margin: 0; padding: 4px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface) }
@@ -188,6 +192,7 @@ mark.hl:hover { background: color-mix(in srgb, var(--acc) 24%, transparent) }
   <main id="page"></main>
 </div>
 <button type="button" class="hl-add" id="hl-add" hidden><svg class="svg" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Add note</button>
+<button type="button" class="hl-add" id="vis-add" hidden><svg class="svg" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Add note</button>
 <div class="hl-pop" id="hl-pop" role="dialog" aria-label="Note on the text" hidden>
   <p class="hl-quote" id="hl-quote"></p>
   <textarea class="qnote" id="hl-text" placeholder="Note for Claude"></textarea>
@@ -297,7 +302,7 @@ document.getElementById("page").innerHTML = `<header class="hero">
     <div class="qlist">${group.questions.map(questionCard).join("")}</div>
   </section>`).join("")}
   <section class="closing">
-    <div class="notes-block" id="notes" hidden><h2>Notes on the text</h2><p>Highlighted passages you commented on. Click one to jump to it.</p><ul class="notes-list" id="notes-list"></ul></div>
+    <div class="notes-block" id="notes" hidden><h2>Notes on the page</h2><p>Highlighted passages and images you commented on. Click one to jump to it.</p><ul class="notes-list" id="notes-list"></ul></div>
     <h2>Anything else?</h2>
     <p>Optional. Goes to Claude with your answers.</p>
     <textarea class="qnote" data-note="general" placeholder="Anything the questions missed"></textarea>
@@ -369,14 +374,35 @@ document.addEventListener("input", (event) => {
   refresh()
 })
 
-const NOTEABLE = ".hero h1, .memo dd, .settled li > span, .group-h p, .qhead h3, .meaning, .cur > span, .evidence"
+const NOTEABLE = ".hero h1, .memo dd, .settled li > span, .group-h h2, .group-h p, .qhead h3, .meaning, .cur > span, .evidence"
+const VISUAL = "img, svg:not(.svg), figure, canvas, .mock"
 const textNotes = () => (state._notes ??= [])
 const blocks = () => [...document.querySelectorAll(NOTEABLE)]
+const page = document.getElementById("page")
+const visuals = [...page.querySelectorAll(VISUAL)].filter((element) => element.closest("button") == null && element.parentElement.closest(VISUAL) == null)
+const captionOf = (element) => (element.getAttribute("alt") || element.getAttribute("aria-label") || element.querySelector("figcaption")?.textContent || element.querySelector("img[alt]")?.alt || element.querySelector(":scope > title")?.textContent || "").replace(/\s+/g, " ").trim()
+visuals.forEach((element, index) => {
+  element.dataset.noteId = `${index}:${captionOf(element)}`
+  element.tabIndex = 0
+})
+const labelOf = (element) => {
+  const heading = [...page.querySelectorAll("h1, h2, h3, h4")].findLast((candidate) => candidate.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING)
+  return captionOf(element) || heading?.textContent.replace(/\s+/g, " ").trim() || `figure ${visuals.indexOf(element) + 1}`
+}
+const visualOf = (note) => visuals.find((element) => element.dataset.noteId === note.anchor) ?? visuals.find((element) => element.dataset.noteId.split(":").slice(1).join(":") === note.anchor.split(":").slice(1).join(":") && captionOf(element) !== "")
+const elementOf = (note) => note.anchor == null ? blocks()[note.block] : visualOf(note)
+const quoteOf = (note) => note.anchor == null ? `“${trimQuote(note.quote)}”` : `[image: ${trimQuote(note.label)}]`
 const trimQuote = (quote) => {
   const flat = quote.replace(/\s+/g, " ").trim()
   return flat.length > 80 ? `${flat.slice(0, 79)}…` : flat
 }
-const notesInOrder = () => textNotes().toSorted((a, b) => a.block - b.block || a.start - b.start)
+const notesInOrder = () => textNotes().toSorted((a, b) => {
+  const first = elementOf(a)
+  const second = elementOf(b)
+  if (first == null || second == null) return (first == null) - (second == null)
+  if (first === second) return (a.start ?? 0) - (b.start ?? 0)
+  return first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+})
 
 const hlAdd = document.getElementById("hl-add")
 const hlPop = document.getElementById("hl-pop")
@@ -397,12 +423,12 @@ const readSelection = () => {
   const selection = getSelection()
   if (selection.rangeCount === 0 || selection.isCollapsed) return null
   const range = selection.getRangeAt(0)
-  const ancestor = range.commonAncestorContainer
-  const block = (ancestor.nodeType === 1 ? ancestor : ancestor.parentElement)?.closest(NOTEABLE)
+  const startNode = range.startContainer
+  const block = (startNode.nodeType === 1 ? startNode : startNode.parentElement)?.closest(NOTEABLE)
   if (block == null) return null
   const text = block.textContent
-  const rawStart = offsetIn(block, range.startContainer, range.startOffset)
-  const rawEnd = offsetIn(block, range.endContainer, range.endOffset)
+  const rawStart = offsetIn(block, startNode, range.startOffset)
+  const rawEnd = block.contains(range.endContainer) ? offsetIn(block, range.endContainer, range.endOffset) : text.length
   const start = rawStart + (text.slice(rawStart, rawEnd).length - text.slice(rawStart, rawEnd).trimStart().length)
   const end = rawEnd - (text.slice(rawStart, rawEnd).length - text.slice(rawStart, rawEnd).trimEnd().length)
   const index = blocks().indexOf(block)
@@ -449,7 +475,7 @@ const unmark = (id) => {
 
 const applyNote = (note) => {
   const block = blocks()[note.block]
-  if (block == null) return
+  if (block == null || note.anchor != null) return
   if (block.textContent.slice(note.start, note.end) !== note.quote) {
     const found = block.textContent.indexOf(note.quote)
     if (found < 0) return
@@ -459,12 +485,42 @@ const applyNote = (note) => {
   markRange(block, note.start, note.end, note.id)
 }
 
+const syncRings = () => {
+  document.querySelectorAll(".vis-badge").forEach((badge) => badge.remove())
+  visuals.forEach((element) => element.classList.remove("vis-noted"))
+  textNotes().filter((note) => note.anchor != null).forEach((note) => {
+    const element = visualOf(note)
+    if (element == null) return
+    element.classList.add("vis-noted")
+    const badge = document.createElement("button")
+    badge.type = "button"
+    badge.className = "vis-badge"
+    badge.dataset.visualNote = note.id
+    badge.setAttribute("aria-label", "Edit note on this image")
+    badge.innerHTML = ICON_NOTE
+    document.body.append(badge)
+  })
+  placeBadges()
+}
+
+const placeBadges = () => {
+  document.querySelectorAll(".vis-badge").forEach((badge) => {
+    const element = visualOf(textNotes().find((note) => note.id === badge.dataset.visualNote))
+    const rect = element?.getBoundingClientRect()
+    badge.hidden = rect == null || rect.width === 0
+    if (badge.hidden) return
+    badge.style.left = `${rect.right + scrollX - 38}px`
+    badge.style.top = `${rect.top + scrollY + 10}px`
+  })
+}
+
 const renderNotes = () => {
+  syncRings()
   const notes = notesInOrder()
   document.getElementById("notes").hidden = notes.length === 0
   const count = document.getElementById("notes-count")
   count.hidden = notes.length === 0
-  count.textContent = `${notes.length} note${notes.length === 1 ? "" : "s"} on the text`
+  count.textContent = `${notes.length} note${notes.length === 1 ? "" : "s"} on the page`
   document.getElementById("notes-list").replaceChildren(...notes.map((note) => {
     const item = document.createElement("li")
     const body = document.createElement("div")
@@ -472,7 +528,7 @@ const renderNotes = () => {
     quote.type = "button"
     quote.className = "nq"
     quote.dataset.jump = note.id
-    quote.textContent = `“${trimQuote(note.quote)}”`
+    quote.textContent = quoteOf(note)
     const text = document.createElement("span")
     text.className = "nt"
     text.textContent = note.text
@@ -495,10 +551,11 @@ const closePopover = () => {
 
 const openPopover = (next, rect) => {
   draft = next
-  document.getElementById("hl-quote").textContent = `“${trimQuote(next.quote)}”`
+  document.getElementById("hl-quote").textContent = quoteOf(next)
   hlText.value = next.text ?? ""
   hlDelete.hidden = next.id == null
   hlAdd.hidden = true
+  visAdd.hidden = true
   hlPop.hidden = false
   placeNear(hlPop, rect)
   hlText.focus()
@@ -513,7 +570,8 @@ const saveDraft = () => {
   if (existing != null) {
     existing.text = text
   } else {
-    const note = { id: `n${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, block: draft.block, start: draft.start, end: draft.end, quote: draft.quote, text }
+    const id = `n${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+    const note = draft.anchor == null ? { id, block: draft.block, start: draft.start, end: draft.end, quote: draft.quote, text } : { id, anchor: draft.anchor, label: draft.label, text }
     textNotes().push(note)
     applyNote(note)
   }
@@ -542,6 +600,27 @@ const syncAddButton = () => {
   placeNear(hlAdd, selected.rect)
 }
 
+const visualDraft = (element) => ({ anchor: element.dataset.noteId, label: labelOf(element) })
+
+const visualRect = (element) => {
+  const rect = element.getBoundingClientRect()
+  return { left: rect.right - 340, bottom: Math.max(rect.top, 0) + 32 }
+}
+
+const visAdd = document.getElementById("vis-add")
+let hovered = null
+
+const showVisAdd = (element) => {
+  const unnoted = element != null && !element.classList.contains("vis-noted") && hlPop.hidden
+  hovered = unnoted ? element : null
+  visAdd.hidden = !unnoted
+  if (!unnoted) return
+  const rect = element.getBoundingClientRect()
+  visAdd.hidden = false
+  visAdd.style.left = `${rect.right + scrollX - visAdd.offsetWidth - 8}px`
+  visAdd.style.top = `${rect.top + scrollY + 8}px`
+}
+
 const startFromSelection = () => {
   const selected = readSelection()
   if (selected != null) openPopover(selected, selected.rect)
@@ -549,6 +628,21 @@ const startFromSelection = () => {
 
 textNotes().forEach(applyNote)
 renderNotes()
+new ResizeObserver(placeBadges).observe(document.body)
+addEventListener("load", placeBadges)
+page.addEventListener("load", placeBadges, true)
+
+visAdd.addEventListener("mousedown", (event) => event.preventDefault())
+visAdd.addEventListener("click", () => {
+  if (hovered != null) openPopover(visualDraft(hovered), visualRect(hovered))
+})
+document.addEventListener("mouseover", (event) => {
+  if (visAdd.contains(event.target)) return
+  showVisAdd(visuals.find((element) => element.contains(event.target)) ?? null)
+})
+document.addEventListener("focusin", (event) => {
+  if (visuals.includes(event.target)) showVisAdd(event.target)
+})
 
 hlAdd.addEventListener("mousedown", (event) => event.preventDefault())
 hlAdd.addEventListener("click", () => {
@@ -566,12 +660,24 @@ document.addEventListener("selectionchange", () => {
   if (getSelection().isCollapsed) hlAdd.hidden = true
 })
 document.addEventListener("keydown", (event) => {
+  if (visuals.includes(event.target) && hlPop.hidden && (event.key === "Enter" || (event.altKey && event.code === "KeyN"))) {
+    event.preventDefault()
+    const note = textNotes().find((entry) => entry.anchor != null && visualOf(entry) === event.target)
+    openPopover(note ?? visualDraft(event.target), visualRect(event.target))
+    return
+  }
   if (event.altKey && event.code === "KeyN" && hlPop.hidden && readSelection() != null) {
     event.preventDefault()
     startFromSelection()
   }
 })
 document.addEventListener("click", (event) => {
+  const badge = event.target.closest(".vis-badge")
+  if (badge != null) {
+    const note = textNotes().find((entry) => entry.id === badge.dataset.visualNote)
+    openPopover(note, visualRect(visualOf(note)))
+    return
+  }
   const mark = event.target.closest("mark.hl")
   if (mark != null && getSelection().isCollapsed) {
     const note = textNotes().find((entry) => entry.id === mark.dataset.note)
@@ -580,7 +686,8 @@ document.addEventListener("click", (event) => {
   }
   const jump = event.target.closest("[data-jump]")
   if (jump != null) {
-    const target = document.querySelector(`mark[data-note="${jump.dataset.jump}"]`)
+    const note = textNotes().find((entry) => entry.id === jump.dataset.jump)
+    const target = note?.anchor == null ? document.querySelector(`mark[data-note="${jump.dataset.jump}"]`) : visualOf(note)
     const evidence = target?.closest(".evidence")
     if (evidence?.hidden) evidence.parentElement.querySelector('[data-act="evidence"]')?.click()
     target?.scrollIntoView({ block: "center" })
@@ -611,7 +718,7 @@ const answerText = () => {
     const note = (state[question.id]?.note ?? "").trim().replace(/\s*\n\s*/g, " / ")
     return `${question.id}: ${state[question.id]?.pick ?? "(no pick)"}${note ? ` | ${note}` : ""}`
   })
-  const noteLines = notesInOrder().map((note) => `note: "${trimQuote(note.quote)}" → ${note.text.trim().replace(/\s*\n\s*/g, " / ")}`)
+  const noteLines = notesInOrder().map((note) => `note: ${note.anchor == null ? `"${trimQuote(note.quote)}"` : `[image: ${trimQuote(note.label)}]`} → ${note.text.trim().replace(/\s*\n\s*/g, " / ")}`)
   const general = (state.general?.note ?? "").trim().replace(/\s*\n\s*/g, " / ")
   const skipped = questions.filter((question) => !isAnswered(question)).map((question) => question.id)
   return [
