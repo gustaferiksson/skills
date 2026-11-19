@@ -1,0 +1,8 @@
+{
+  "name": "gustaf",
+  "description": "PR review, design checks, briefings, UI mocks, diagrams and DynamoDB single-table conventions.",
+  "author": {
+    "name": "Gustaf Eriksson"
+  },
+  "repository": "https://github.com/gustaferiksson/skills"
+}

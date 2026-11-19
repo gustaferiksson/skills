@@ -1,0 +1,14 @@
+{
+  "name": "gustaferiksson",
+  "owner": {
+    "name": "Gustaf Eriksson"
+  },
+  "description": "Gustaf Eriksson's agent skills, as one installable plugin.",
+  "plugins": [
+    {
+      "name": "gustaf",
+      "source": "./",
+      "description": "PR review, design checks, briefings, UI mocks, diagrams and DynamoDB single-table conventions."
+    }
+  ]
+}
