@@ -32,7 +32,7 @@ To change an existing diagram: `node scripts/diagram.mjs extract <file>.drawio.s
 
 ## Rules for every diagram
 
-- **One question per diagram.** At most about 15 boxes or icons. More means two diagrams, or a higher altitude.
+- **One question per diagram.** Split when it answers two questions, not at a box count; a system overview shows every part it has.
 - **Names, not prose.** Labels are names and a short phrase at most. Explanations belong in the document around the diagram. No file names, no "this could be...", no paragraphs under nodes.
 - **Text never under a line.** No edge, border or icon crosses a label. Build warns about every crossing; fix them by moving nodes, changing exit or entry points, or adding waypoints.
 - **One main direction.** The main flow runs left to right (or top to bottom for flowcharts). Side effects branch off at right angles.
