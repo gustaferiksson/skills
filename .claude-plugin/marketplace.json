@@ -1,0 +1,14 @@
+{
+  "name": "gustaferiksson",
+  "owner": {
+    "name": "Gustaf Eriksson"
+  },
+  "description": "Gustaf's agent skills.",
+  "plugins": [
+    {
+      "name": "gustaf",
+      "source": "./",
+      "description": "Gustaf's agent skills."
+    }
+  ]
+}
