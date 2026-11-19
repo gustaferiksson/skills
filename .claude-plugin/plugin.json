@@ -1,6 +1,6 @@
 {
   "name": "gustaf",
-  "description": "PR review, design checks, briefings, UI mocks, diagrams and DynamoDB single-table conventions.",
+  "description": "Agent skills for everyday engineering work.",
   "author": {
     "name": "Gustaf Eriksson"
   },

@@ -8,7 +8,7 @@
     {
       "name": "gustaf",
       "source": "./",
-      "description": "PR review, design checks, briefings, UI mocks, diagrams and DynamoDB single-table conventions."
+      "description": "Agent skills for everyday engineering work."
     }
   ]
 }
