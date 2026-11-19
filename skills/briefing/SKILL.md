@@ -27,7 +27,7 @@ The user has little spare attention. Every rule below exists to save it.
 
 ## Build
 
-Copy [assets/template.html](assets/template.html) and replace only the `PAGE` object between the `REPLACE` markers. The template does the layout, progress, sidebar links, localStorage drafts, light and dark theme, and the answer text. Clicking a picked option unpicks it.
+Copy [assets/template.html](assets/template.html) and replace only the `PAGE` object between the `REPLACE` markers. The template does the layout, progress, sidebar links, localStorage drafts, light and dark theme, and the answer text. Clicking a picked option unpicks it. Selecting any text in the memo, evidence or cards offers **Add note** (or ⌥N): the passage stays highlighted, click it to edit or delete, and the notes are listed above "Anything else?".
 
 ```js
 const PAGE = {
@@ -83,11 +83,13 @@ The script serves the page on `127.0.0.1` under a random token, opens the browse
 Help me pick how to make search fast
 parser: Merge into one
 facets: Cache them | only for large tenants
+note: "3.6 of the 4.2 seconds" → is that p95 or the mean?
 general: ship before Friday
 skipped: rollout
 === ANSWERS END ===
 ```
 
+- Notes on highlighted text come back as `note: "<quoted passage, trimmed to 80 characters>" → <note>` lines after the question lines; they are comments on that passage, not answers, and need no pick.
 - If the notification shows only the task id, read the task's output file.
 - Exit 2: timeout without answers. Exit 64 or 66: bad arguments or missing file.
 - The port comes from the file path, so re-serving the same file keeps drafts. Each run accepts one submit and has a new token: earlier tabs go stale (Send fails, Copy still works). `--no-open` skips opening a tab, for tests or when you hand over the printed URL.

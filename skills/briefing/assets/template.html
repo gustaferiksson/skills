@@ -133,6 +133,32 @@ code.ref { display: table; margin-top: 8px; padding: 2px 7px; border-radius: 6px
 .closing > p { color: var(--mute); font-size: 14.5px }
 pre { white-space: pre-wrap; margin: 0; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font: 13px/1.5 var(--mono) }
 
+.btn.sm { height: 32px; padding: 0 12px; font-size: 13.5px; border-radius: 8px }
+mark.hl { background: color-mix(in srgb, var(--acc) 14%, transparent); color: inherit; border-bottom: 1.5px solid color-mix(in srgb, var(--acc) 45%, transparent); border-radius: 2px; cursor: pointer }
+mark.hl:hover { background: color-mix(in srgb, var(--acc) 24%, transparent) }
+.hl-add, .hl-pop { position: absolute; z-index: 20 }
+.hl-add { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; border-radius: 8px; background: var(--acc); color: var(--acc-ink); font-size: 13px; font-weight: 600; box-shadow: 0 4px 14px rgb(0 0 0 / .2) }
+.hl-add:hover { filter: brightness(1.08) }
+.hl-add .svg { width: 14px; height: 14px }
+.hl-pop { display: grid; gap: 10px; width: min(340px, calc(100vw - 16px)); padding: 12px; border: 1px solid var(--line2); border-radius: 12px; background: var(--surface); box-shadow: 0 10px 32px rgb(0 0 0 / .22) }
+.hl-quote { font-size: 12.5px; line-height: 1.4; color: var(--mute); padding-left: 10px; border-left: 2px solid var(--line2); overflow-wrap: anywhere }
+.hl-pop .qnote { min-height: 56px; max-height: 40vh }
+.hl-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--faint) }
+.hl-btns { display: flex; gap: 6px }
+.hl-del { color: var(--mute); font-size: 13.5px; padding: 0 8px; align-self: center }
+.hl-del:hover { color: var(--ink) }
+.notes-block { display: grid; gap: 10px }
+.notes-block h2 { font-size: calc(var(--h2) * .85) }
+.notes-list { list-style: none; margin: 0; padding: 4px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface) }
+.notes-list li { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; padding: 11px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.5 }
+.notes-list li:first-child { border-top: 0 }
+.notes-list .nq { display: block; color: var(--mute); font-size: 13px; text-align: left; overflow-wrap: anywhere }
+.notes-list .nq:hover { color: var(--ink) }
+.notes-list .nt { display: block; color: var(--fg2); margin-top: 2px; overflow-wrap: anywhere }
+.notes-list .nx { color: var(--mute); padding: 2px 6px; border-radius: 6px; font-size: 13px }
+.notes-list .nx:hover { background: var(--track); color: var(--ink) }
+.notes-count { font-size: 13.5px; color: var(--acc); text-decoration: none }
+
 @media (max-width: 900px) {
   :root { --h1: 34px; --pad: 22px; --sec: 64px; --top: 40px }
   .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding: var(--top) 16px 96px }
@@ -151,7 +177,7 @@ pre { white-space: pre-wrap; margin: 0; padding: 14px; border: 1px solid var(--l
 <div class="shell">
   <aside class="side">
     <div class="title"><span class="eyebrow">Your decisions</span><span id="count"></span></div>
-    <div class="prog"><span id="progress"></span><div class="bar"><i id="bar"></i></div></div>
+    <div class="prog"><span id="progress"></span><div class="bar"><i id="bar"></i></div><a class="notes-count" id="notes-count" href="#notes" hidden></a></div>
     <nav class="toc" id="toc"></nav>
     <div class="actions">
       <button type="button" class="btn" id="send" hidden>Send to Claude <svg class="svg" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-3-7z"/></svg></button>
@@ -160,6 +186,12 @@ pre { white-space: pre-wrap; margin: 0; padding: 14px; border: 1px solid var(--l
     </div>
   </aside>
   <main id="page"></main>
+</div>
+<button type="button" class="hl-add" id="hl-add" hidden><svg class="svg" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Add note</button>
+<div class="hl-pop" id="hl-pop" role="dialog" aria-label="Note on the text" hidden>
+  <p class="hl-quote" id="hl-quote"></p>
+  <textarea class="qnote" id="hl-text" placeholder="Note for Claude"></textarea>
+  <div class="hl-foot"><span>&#8984;&#8629; save, Esc cancel</span><span class="hl-btns"><button type="button" class="hl-del" id="hl-del" hidden>Delete</button><button type="button" class="btn ghost sm" id="hl-cancel">Cancel</button><button type="button" class="btn sm" id="hl-save">Save</button></span></div>
 </div>
 
 <script>
@@ -265,6 +297,7 @@ document.getElementById("page").innerHTML = `<header class="hero">
     <div class="qlist">${group.questions.map(questionCard).join("")}</div>
   </section>`).join("")}
   <section class="closing">
+    <div class="notes-block" id="notes" hidden><h2>Notes on the text</h2><p>Highlighted passages you commented on. Click one to jump to it.</p><ul class="notes-list" id="notes-list"></ul></div>
     <h2>Anything else?</h2>
     <p>Optional. Goes to Claude with your answers.</p>
     <textarea class="qnote" data-note="general" placeholder="Anything the questions missed"></textarea>
@@ -336,16 +369,255 @@ document.addEventListener("input", (event) => {
   refresh()
 })
 
+const NOTEABLE = ".hero h1, .memo dd, .settled li > span, .group-h p, .qhead h3, .meaning, .cur > span, .evidence"
+const textNotes = () => (state._notes ??= [])
+const blocks = () => [...document.querySelectorAll(NOTEABLE)]
+const trimQuote = (quote) => {
+  const flat = quote.replace(/\s+/g, " ").trim()
+  return flat.length > 80 ? `${flat.slice(0, 79)}…` : flat
+}
+const notesInOrder = () => textNotes().toSorted((a, b) => a.block - b.block || a.start - b.start)
+
+const hlAdd = document.getElementById("hl-add")
+const hlPop = document.getElementById("hl-pop")
+const hlText = document.getElementById("hl-text")
+const hlDelete = document.getElementById("hl-del")
+let draft = null
+
+const offsetIn = (block, node, offset) => {
+  const range = document.createRange()
+  range.selectNodeContents(block)
+  range.setEnd(node, offset)
+  return range.toString().length
+}
+
+const overlaps = (block, start, end) => textNotes().some((note) => note.block === block && note.start < end && start < note.end)
+
+const readSelection = () => {
+  const selection = getSelection()
+  if (selection.rangeCount === 0 || selection.isCollapsed) return null
+  const range = selection.getRangeAt(0)
+  const ancestor = range.commonAncestorContainer
+  const block = (ancestor.nodeType === 1 ? ancestor : ancestor.parentElement)?.closest(NOTEABLE)
+  if (block == null) return null
+  const text = block.textContent
+  const rawStart = offsetIn(block, range.startContainer, range.startOffset)
+  const rawEnd = offsetIn(block, range.endContainer, range.endOffset)
+  const start = rawStart + (text.slice(rawStart, rawEnd).length - text.slice(rawStart, rawEnd).trimStart().length)
+  const end = rawEnd - (text.slice(rawStart, rawEnd).length - text.slice(rawStart, rawEnd).trimEnd().length)
+  const index = blocks().indexOf(block)
+  if (end <= start || overlaps(index, start, end)) return null
+  const rects = range.getClientRects()
+  return { block: index, start, end, quote: text.slice(start, end), rect: rects[rects.length - 1] ?? range.getBoundingClientRect() }
+}
+
+const placeNear = (element, rect) => {
+  element.hidden = false
+  const left = Math.min(Math.max(8, rect.left + scrollX), scrollX + innerWidth - element.offsetWidth - 8)
+  element.style.left = `${left}px`
+  element.style.top = `${rect.bottom + scrollY + 8}px`
+}
+
+const markRange = (block, start, end, id) => {
+  const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT)
+  const pieces = []
+  let position = 0
+  for (let node = walker.nextNode(); node != null; node = walker.nextNode()) {
+    const from = Math.max(start, position)
+    const to = Math.min(end, position + node.length)
+    if (from < to) pieces.push([node, from - position, to - position])
+    position += node.length
+  }
+  pieces.forEach(([node, from, to]) => {
+    const range = document.createRange()
+    range.setStart(node, from)
+    range.setEnd(node, to)
+    const mark = document.createElement("mark")
+    mark.className = "hl"
+    mark.dataset.note = id
+    range.surroundContents(mark)
+  })
+}
+
+const unmark = (id) => {
+  document.querySelectorAll(`mark[data-note="${id}"]`).forEach((mark) => {
+    const parent = mark.parentNode
+    mark.replaceWith(...mark.childNodes)
+    parent.normalize()
+  })
+}
+
+const applyNote = (note) => {
+  const block = blocks()[note.block]
+  if (block == null) return
+  if (block.textContent.slice(note.start, note.end) !== note.quote) {
+    const found = block.textContent.indexOf(note.quote)
+    if (found < 0) return
+    note.start = found
+    note.end = found + note.quote.length
+  }
+  markRange(block, note.start, note.end, note.id)
+}
+
+const renderNotes = () => {
+  const notes = notesInOrder()
+  document.getElementById("notes").hidden = notes.length === 0
+  const count = document.getElementById("notes-count")
+  count.hidden = notes.length === 0
+  count.textContent = `${notes.length} note${notes.length === 1 ? "" : "s"} on the text`
+  document.getElementById("notes-list").replaceChildren(...notes.map((note) => {
+    const item = document.createElement("li")
+    const body = document.createElement("div")
+    const quote = document.createElement("button")
+    quote.type = "button"
+    quote.className = "nq"
+    quote.dataset.jump = note.id
+    quote.textContent = `“${trimQuote(note.quote)}”`
+    const text = document.createElement("span")
+    text.className = "nt"
+    text.textContent = note.text
+    const remove = document.createElement("button")
+    remove.type = "button"
+    remove.className = "nx"
+    remove.dataset.remove = note.id
+    remove.setAttribute("aria-label", "Delete note")
+    remove.textContent = "×"
+    body.append(quote, text)
+    item.append(body, remove)
+    return item
+  }))
+}
+
+const closePopover = () => {
+  hlPop.hidden = true
+  draft = null
+}
+
+const openPopover = (next, rect) => {
+  draft = next
+  document.getElementById("hl-quote").textContent = `“${trimQuote(next.quote)}”`
+  hlText.value = next.text ?? ""
+  hlDelete.hidden = next.id == null
+  hlAdd.hidden = true
+  hlPop.hidden = false
+  placeNear(hlPop, rect)
+  hlText.focus()
+}
+
+const saveDraft = () => {
+  const text = hlText.value.trim()
+  if (draft == null) return
+  const existing = textNotes().find((note) => note.id === draft.id)
+  if (text === "" && existing == null) return closePopover()
+  if (text === "") return removeNote(existing.id)
+  if (existing != null) {
+    existing.text = text
+  } else {
+    const note = { id: `n${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, block: draft.block, start: draft.start, end: draft.end, quote: draft.quote, text }
+    textNotes().push(note)
+    applyNote(note)
+  }
+  save()
+  renderNotes()
+  closePopover()
+  getSelection().removeAllRanges()
+}
+
+const removeNote = (id) => {
+  unmark(id)
+  state._notes = textNotes().filter((note) => note.id !== id)
+  save()
+  renderNotes()
+  closePopover()
+}
+
+const syncAddButton = () => {
+  const selected = hlPop.hidden ? readSelection() : null
+  if (selected == null) {
+    hlAdd.hidden = true
+    return
+  }
+  draft = null
+  hlAdd.pending = selected
+  placeNear(hlAdd, selected.rect)
+}
+
+const startFromSelection = () => {
+  const selected = readSelection()
+  if (selected != null) openPopover(selected, selected.rect)
+}
+
+textNotes().forEach(applyNote)
+renderNotes()
+
+hlAdd.addEventListener("mousedown", (event) => event.preventDefault())
+hlAdd.addEventListener("click", () => {
+  const { pending } = hlAdd
+  if (pending != null) openPopover(pending, pending.rect)
+})
+document.addEventListener("mouseup", (event) => {
+  if (hlPop.contains(event.target) || hlAdd.contains(event.target)) return
+  setTimeout(syncAddButton, 0)
+})
+document.addEventListener("keyup", (event) => {
+  if (event.key.startsWith("Arrow") || event.key === "Shift") syncAddButton()
+})
+document.addEventListener("selectionchange", () => {
+  if (getSelection().isCollapsed) hlAdd.hidden = true
+})
+document.addEventListener("keydown", (event) => {
+  if (event.altKey && event.code === "KeyN" && hlPop.hidden && readSelection() != null) {
+    event.preventDefault()
+    startFromSelection()
+  }
+})
+document.addEventListener("click", (event) => {
+  const mark = event.target.closest("mark.hl")
+  if (mark != null && getSelection().isCollapsed) {
+    const note = textNotes().find((entry) => entry.id === mark.dataset.note)
+    if (note != null) openPopover(note, mark.getBoundingClientRect())
+    return
+  }
+  const jump = event.target.closest("[data-jump]")
+  if (jump != null) {
+    const target = document.querySelector(`mark[data-note="${jump.dataset.jump}"]`)
+    const evidence = target?.closest(".evidence")
+    if (evidence?.hidden) evidence.parentElement.querySelector('[data-act="evidence"]')?.click()
+    target?.scrollIntoView({ block: "center" })
+    return
+  }
+  const remove = event.target.closest("[data-remove]")
+  if (remove != null) removeNote(remove.dataset.remove)
+})
+document.addEventListener("mousedown", (event) => {
+  if (!hlPop.hidden && !hlPop.contains(event.target) && hlText.value.trim() === (draft?.text ?? "")) closePopover()
+})
+hlPop.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    event.preventDefault()
+    closePopover()
+  }
+  if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+    event.preventDefault()
+    saveDraft()
+  }
+})
+document.getElementById("hl-save").addEventListener("click", saveDraft)
+document.getElementById("hl-cancel").addEventListener("click", closePopover)
+hlDelete.addEventListener("click", () => removeNote(draft.id))
+
 const answerText = () => {
   const lines = questions.filter(isAnswered).map((question) => {
     const note = (state[question.id]?.note ?? "").trim().replace(/\s*\n\s*/g, " / ")
     return `${question.id}: ${state[question.id]?.pick ?? "(no pick)"}${note ? ` | ${note}` : ""}`
   })
+  const noteLines = notesInOrder().map((note) => `note: "${trimQuote(note.quote)}" → ${note.text.trim().replace(/\s*\n\s*/g, " / ")}`)
   const general = (state.general?.note ?? "").trim().replace(/\s*\n\s*/g, " / ")
   const skipped = questions.filter((question) => !isAnswered(question)).map((question) => question.id)
   return [
     document.title,
     ...lines,
+    ...noteLines,
     ...(general ? [`general: ${general}`] : []),
     ...(skipped.length > 0 ? [`skipped: ${skipped.join(", ")}`] : []),
   ].join("\n")
